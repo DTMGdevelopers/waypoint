@@ -138,6 +138,11 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: playwright-report/
+
       # Optional: post a Slack notification on failure.
       # Uncomment and add SLACK_WEBHOOK to repository secrets.
       # - name: Notify Slack on failure
@@ -151,3 +156,19 @@ jobs:
       #       }
       #   env:
       #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ── Stage 4: publish report to GitHub Pages ────────────────────────────────
+  deploy-pages:
+    name: Publish report to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: report
+    if: always()
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
