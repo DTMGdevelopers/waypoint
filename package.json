@@ -1,0 +1,31 @@
+{
+  "name": "waypoint-regression",
+  "version": "1.0.0",
+  "description": "Playwright regression test suite for the Waypoint booking site",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test tests/smoke/",
+    "test:booking": "playwright test tests/booking/",
+    "test:visual": "playwright test tests/visual/",
+    "test:a11y": "playwright test tests/accessibility/",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report",
+    "snapshots:update": "playwright test tests/visual/ --update-snapshots"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.9.1",
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.12.12",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.4.5"
+  }
+}
