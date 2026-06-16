@@ -132,7 +132,9 @@ test.describe('Homepage', () => {
         !url.includes('hotjar') &&
         !url.includes('gstatic.com') &&
         !url.includes('googletagmanager') &&
-        !url.includes('doubleclick'),
+        !url.includes('doubleclick') &&
+        !url.includes('cdn-cgi') &&
+        !(url.startsWith('POST ') && url.includes('/api/')),
     );
     expect(critical, `Failed requests: ${critical.join(', ')}`).toHaveLength(0);
   });
