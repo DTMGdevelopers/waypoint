@@ -34,8 +34,8 @@ on:
 
 env:
   # inputs.base_url (from workflow_dispatch / workflow_call) takes priority;
-  # falls back to the repo secret for push / schedule triggers.
-  BASE_URL: ${{ inputs.base_url || secrets.BASE_URL }}
+  # falls back to the BASE_URL repository variable for push / schedule triggers.
+  BASE_URL: ${{ inputs.base_url || vars.BASE_URL }}
   TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
   TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
   PAYMENT_PROVIDER: ${{ secrets.PAYMENT_PROVIDER || 'stripe' }}
