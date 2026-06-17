@@ -15,6 +15,7 @@ type BookingFixtures = {
   extrasPage: ExtrasPage;
   reviewPage: ReviewPage;
   paymentPage: PaymentPage;
+  overlayHandler: void;
 };
 
 export const test = base.extend<BookingFixtures>({
@@ -25,6 +26,30 @@ export const test = base.extend<BookingFixtures>({
   extrasPage: async ({ page }, use) => use(new ExtrasPage(page)),
   reviewPage: async ({ page }, use) => use(new ReviewPage(page)),
   paymentPage: async ({ page }, use) => use(new PaymentPage(page)),
+
+  // Auto-dismisses overlays that intercept pointer events across all booking tests.
+  // addLocatorHandler fires automatically whenever the locator becomes visible,
+  // before Playwright attempts any action — no manual calls needed in tests.
+  overlayHandler: [async ({ page }, use) => {
+    // CookieYes consent banner (cookie-law-info plugin)
+    await page.addLocatorHandler(
+      page.locator('button[data-cky-tag="accept-all-button"]'),
+      async (btn) => { await btn.click(); },
+    );
+
+    // f24 marketing overlay (data-crypt.com) — intercepts pointer events as a full-page backdrop.
+    // No close button is present; remove it from the DOM so clicks reach the page below.
+    await page.addLocatorHandler(
+      page.locator('[role="f24-popup"]'),
+      async () => {
+        await page.evaluate(() => {
+          document.querySelectorAll('[role="f24-popup"]').forEach((el) => el.remove());
+        });
+      },
+    );
+
+    await use();
+  }, { auto: true }],
 });
 
 export { expect } from '@playwright/test';
