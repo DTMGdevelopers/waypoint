@@ -100,8 +100,7 @@ test.describe('Homepage', () => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
 
-    await page.reload();
-    await page.waitForLoadState('domcontentloaded');
+    await page.reload({ waitUntil: 'domcontentloaded' });
 
     // WebKit/Safari surfaces CORS access-control rejections from third-party API
     // calls as pageerrors; Chromium silently ignores them. Filter these out since
