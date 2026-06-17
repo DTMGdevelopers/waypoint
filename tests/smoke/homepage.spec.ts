@@ -66,16 +66,14 @@ test.describe('Homepage', () => {
   });
 
   // ── Search widget ─────────────────────────────────────────────────────────
-  // The homepage uses a custom filter widget (Cruise Line / Regions / Dates /
-  // Duration dropdowns) rather than a standard <form>. The CTA is a link to
-  // /search/, not a <button>.
+  // Sites use a custom filter widget rather than a standard <form>. Label text
+  // varies per theme so we check for the widget container rather than specific copy.
 
   test('search widget filters are present', async ({ page }) => {
-    // All four filter labels must be visible
-    await expect(page.getByText('Cruise Line', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('Regions', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('Dates', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('Duration', { exact: true }).first()).toBeVisible();
+    // Each site's search widget uses elements with "search-form" in the class name.
+    // This is intentionally broad so it works across different theme label variations.
+    const searchWidget = page.locator('[class*="search-form"]').first();
+    await expect(searchWidget).toBeVisible();
   });
 
   test('Search link is present and points to /search/', async ({ page }) => {
@@ -122,8 +120,9 @@ test.describe('Homepage', () => {
 
     await page.reload({ waitUntil: 'domcontentloaded' });
 
-    // Only flag JS/CSS/document failures. Images, fonts, and third-party CDN
-    // resources fail intermittently on this site and are not blocking.
+    // Only flag JS/CSS/document failures. Images, fonts, and third-party marketing/
+    // analytics/monitoring resources are excluded — they fail intermittently across
+    // sites and are not blocking to the user experience.
     const critical = failures.filter(
       (url) =>
         !url.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff2?|ttf|eot)(\?.*)?$/i) &&
@@ -134,6 +133,11 @@ test.describe('Homepage', () => {
         !url.includes('googletagmanager') &&
         !url.includes('doubleclick') &&
         !url.includes('cdn-cgi') &&
+        !url.includes('pingdom.net') &&
+        !url.includes('contentsquare.net') &&
+        !url.includes('data-crypt.com') &&
+        !url.includes('feefo.com') &&
+        !url.includes('google.com/rmkt') &&
         !(url.startsWith('POST ') && url.includes('/api/')),
     );
     expect(critical, `Failed requests: ${critical.join(', ')}`).toHaveLength(0);
