@@ -128,9 +128,9 @@ test.describe('Occupancy page', () => {
     await page.goto(TEST_OCCUPANCY_PATH);
     await page.waitForLoadState('domcontentloaded');
     // century-cypress: #field_enquiry_*  /  visioncruise: input[name="adults"] etc.
+    // Not all sites expose an infants field — only assert adults and children.
     await expect(page.locator('#field_enquiry_adults, input[name="adults"]')).toBeAttached();
     await expect(page.locator('#field_enquiry_children, input[name="children"]')).toBeAttached();
-    await expect(page.locator('#field_enquiry_infants, input[name="infants"]')).toBeAttached();
     await expect(page.getByRole('link', { name: 'Continue' }).first()).toBeVisible();
   });
 });

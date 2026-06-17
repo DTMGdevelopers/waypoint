@@ -6,7 +6,7 @@ export class CruiseDetailPage {
   // Mobile: sticky footer "Book Now" link (capital N — distinguishes it from the
   // stateroom-specific "Book now" links in the page body)
   private readonly stickyBookNow = this.page.getByRole('link', { name: 'Book Now', exact: true });
-  private readonly cruiseName = this.page.getByRole('heading', { level: 1 });
+  private readonly cruiseName = this.page.getByRole('heading', { level: 1 }).first();
 
   constructor(private readonly page: Page) {}
 
