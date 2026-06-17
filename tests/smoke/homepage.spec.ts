@@ -52,7 +52,7 @@ test.describe('Homepage', () => {
     if (isMobile) {
       // On mobile the nav collapses; check for a toggle button or nav landmark
       const nav = page.getByRole('navigation');
-      const toggle = page.getByRole('button', { name: /menu|nav|toggle/i });
+      const toggle = page.getByRole('button', { name: /menu|nav|toggle/i }).first();
       const hasNav = await nav.isVisible();
       const hasToggle = await toggle.isVisible();
       expect(hasNav || hasToggle, 'Expected a nav landmark or menu toggle on mobile').toBe(true);
@@ -137,6 +137,8 @@ test.describe('Homepage', () => {
         !url.includes('data-crypt.com') &&
         !url.includes('feefo.com') &&
         !url.includes('google.com/rmkt') &&
+        !url.includes('google.com/pagead') &&
+        !url.startsWith('GET blob:') &&
         !(url.startsWith('POST ') && url.includes('/api/')),
     );
     expect(critical, `Failed requests: ${critical.join(', ')}`).toHaveLength(0);

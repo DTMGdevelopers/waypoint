@@ -32,10 +32,15 @@ export class SearchPage {
   }
 
   async selectFirstResult() {
-    // noWaitAfter avoids the 15s actionTimeout gating on the slow server navigation.
-    await this.resultLinks.first().click({ noWaitAfter: true });
-    // Accept /cruises/ (century-cypress) and /specials/ (visioncruise) paths.
-    await this.page.waitForURL(/\/(cruises?|specials?)\//, { timeout: 90_000 });
+    // Prefer links pointing to /cruises/ — specials have a different booking flow
+    // and can appear at the top of results on some sites.
+    const cruiseLink = this.page
+      .getByRole('link', { name: /^(view|more) details$/i })
+      .and(this.page.locator('a[href*="/cruises/"]'));
+    const hasCruiseLink = (await cruiseLink.count()) > 0;
+    const link = hasCruiseLink ? cruiseLink.first() : this.resultLinks.first();
+    await link.click({ noWaitAfter: true });
+    await this.page.waitForURL(/\/cruises\//, { timeout: 90_000 });
     return this;
   }
 
