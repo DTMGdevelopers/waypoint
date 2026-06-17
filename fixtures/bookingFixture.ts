@@ -28,24 +28,18 @@ export const test = base.extend<BookingFixtures>({
   paymentPage: async ({ page }, use) => use(new PaymentPage(page)),
 
   // Auto-dismisses overlays that intercept pointer events across all booking tests.
-  // addLocatorHandler fires automatically whenever the locator becomes visible,
-  // before Playwright attempts any action — no manual calls needed in tests.
   overlayHandler: [async ({ page }, use) => {
-    // CookieYes consent banner (cookie-law-info plugin)
+    // Block data-crypt.com marketing scripts before they load — they inject an f24
+    // popup backdrop that intercepts pointer events but has no visible close button.
+    // Serving an empty JS response prevents the overlay from ever being created.
+    await page.route(/data-crypt\.com/, (route) =>
+      route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }),
+    );
+
+    // CookieYes consent banner (cookie-law-info plugin) — click Accept All when visible.
     await page.addLocatorHandler(
       page.locator('button[data-cky-tag="accept-all-button"]'),
       async (btn) => { await btn.click(); },
-    );
-
-    // f24 marketing overlay (data-crypt.com) — intercepts pointer events as a full-page backdrop.
-    // No close button is present; remove it from the DOM so clicks reach the page below.
-    await page.addLocatorHandler(
-      page.locator('[role="f24-popup"]'),
-      async () => {
-        await page.evaluate(() => {
-          document.querySelectorAll('[role="f24-popup"]').forEach((el) => el.remove());
-        });
-      },
     );
 
     await use();
