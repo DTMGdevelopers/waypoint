@@ -22,13 +22,20 @@ export class SearchPage {
     // 180s — the search page is AJAX-rendered on a WordPress stack that can spike
     // well past 120s under server load. Raise to 180s to survive those spikes.
     await this.resultLinks.first().waitFor({ state: 'visible', timeout: 180_000 });
+    // Some themes show a loading overlay after results render that blocks clicks.
+    // Wait for it to disappear before returning control to the caller.
+    await this.page
+      .locator('#search-loading-overlay.is-visible')
+      .waitFor({ state: 'hidden', timeout: 15_000 })
+      .catch(() => {});
     return this;
   }
 
   async selectFirstResult() {
     // noWaitAfter avoids the 15s actionTimeout gating on the slow server navigation.
     await this.resultLinks.first().click({ noWaitAfter: true });
-    await this.page.waitForURL(/\/cruises\//, { timeout: 90_000 });
+    // Accept /cruises/ (century-cypress) and /specials/ (visioncruise) paths.
+    await this.page.waitForURL(/\/(cruises?|specials?)\//, { timeout: 90_000 });
     return this;
   }
 

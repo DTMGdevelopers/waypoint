@@ -1,11 +1,11 @@
 import { Page } from '@playwright/test';
 
 export class OccupancyPage {
-  // The site uses custom-styled dropdowns that hide the native <select>.
-  // We target by ID and use { force: true } to bypass the visibility check.
-  private readonly adultsSelect = this.page.locator('#field_enquiry_adults');
-  private readonly childrenSelect = this.page.locator('#field_enquiry_children');
-  private readonly infantsSelect = this.page.locator('#field_enquiry_infants');
+  // century-cypress uses custom-styled dropdowns (#field_enquiry_*).
+  // visioncruise uses hidden inputs (input[name="adults"] etc.).
+  private readonly adultsSelect = this.page.locator('#field_enquiry_adults, input[name="adults"]');
+  private readonly childrenSelect = this.page.locator('#field_enquiry_children, input[name="children"]');
+  private readonly infantsSelect = this.page.locator('#field_enquiry_infants, input[name="infants"]');
   // "Continue" is rendered as a <a> link, not a <button>.
   private readonly continueLink = this.page.getByRole('link', { name: 'Continue' }).first();
 

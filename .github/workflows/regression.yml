@@ -22,6 +22,14 @@ on:
         description: 'Site URL to test'
         type: string
         required: false
+      test_cruise_path:
+        description: 'Path to a cruise detail page for step tests'
+        type: string
+        required: false
+      test_occupancy_path:
+        description: 'Path + query string for the occupancy step test'
+        type: string
+        required: false
     secrets:
       TEST_USER_EMAIL:
         required: false
@@ -31,12 +39,14 @@ on:
         required: false
 
 env:
-  # inputs.base_url (from workflow_dispatch / workflow_call) takes priority;
-  # falls back to the BASE_URL repository variable for push / schedule triggers.
+  # inputs.* (from workflow_dispatch / workflow_call) take priority;
+  # fall back to repository variables for push / schedule triggers.
   BASE_URL: ${{ inputs.base_url || vars.BASE_URL }}
   TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
   TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
   PAYMENT_PROVIDER: ${{ secrets.PAYMENT_PROVIDER || 'stripe' }}
+  TEST_CRUISE_PATH: ${{ inputs.test_cruise_path || vars.TEST_CRUISE_PATH }}
+  TEST_OCCUPANCY_PATH: ${{ inputs.test_occupancy_path || vars.TEST_OCCUPANCY_PATH }}
   CI: 'true'
 
 jobs:
