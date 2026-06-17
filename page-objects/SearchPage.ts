@@ -32,13 +32,12 @@ export class SearchPage {
   }
 
   async selectFirstResult() {
-    // Prefer links pointing to /cruises/ — specials have a different booking flow
-    // and can appear at the top of results on some sites.
-    const cruiseLink = this.page
-      .getByRole('link', { name: /^(view|more) details$/i })
-      .and(this.page.locator('a[href*="/cruises/"]'));
-    const hasCruiseLink = (await cruiseLink.count()) > 0;
-    const link = hasCruiseLink ? cruiseLink.first() : this.resultLinks.first();
+    // Look for any visible link to /cruises/ within the main content area.
+    // Specials (/specials/) are excluded — they use a different booking flow.
+    // Falls back to the first result link if no cruise link is found.
+    const cruiseLink = this.page.locator('main a[href*="/cruises/"]').first();
+    const hasCruiseLink = await cruiseLink.isVisible().catch(() => false);
+    const link = hasCruiseLink ? cruiseLink : this.resultLinks.first();
     await link.click({ noWaitAfter: true });
     await this.page.waitForURL(/\/cruises\//, { timeout: 90_000 });
     return this;
