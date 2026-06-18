@@ -37,8 +37,13 @@ export class OccupancyPage {
   }
 
   async continue() {
-    await this.continueLink.scrollIntoViewIfNeeded();
-    await this.continueLink.click({ noWaitAfter: true });
+    const href = await this.continueLink.getAttribute('href');
+    if (href) {
+      await this.page.goto(href, { waitUntil: 'domcontentloaded' });
+    } else {
+      await this.continueLink.scrollIntoViewIfNeeded();
+      await this.continueLink.click({ noWaitAfter: true });
+    }
     await this.page.waitForURL(/\/staterooms/, { timeout: 90_000 });
     return this;
   }

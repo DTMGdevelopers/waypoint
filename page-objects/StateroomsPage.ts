@@ -20,8 +20,13 @@ export class StateroomsPage {
   }
 
   async continue() {
-    await this.continueLink.scrollIntoViewIfNeeded();
-    await this.continueLink.click({ noWaitAfter: true });
+    const href = await this.continueLink.getAttribute('href');
+    if (href) {
+      await this.page.goto(href, { waitUntil: 'domcontentloaded' });
+    } else {
+      await this.continueLink.scrollIntoViewIfNeeded();
+      await this.continueLink.click({ noWaitAfter: true });
+    }
     // "Sail Away" guarantee staterooms skip /cabins/ and go straight to /passengers/.
     await this.page.waitForURL(/\/(cabins|passengers)\//, { timeout: 90_000 });
     return this;
