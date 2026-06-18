@@ -1,10 +1,13 @@
 import { Page } from '@playwright/test';
+import { futureDateISO } from '../helpers/testData';
 
-// Narrowed to a single month to keep the result set small (<300 cruises vs 8000+),
-// which makes the AJAX render fast enough for reliable test timing.
-// Update dates when sailings in this window sell out.
-export const SEARCH_URL =
-  '/search/?sort=date&order=asc&startdate=2026-08-01&enddate=2026-08-31&price=0%2C50000%2B';
+// Rolling 31-day window starting 3 months from today — always bookable,
+// never needs manual updating as dates pass.
+function searchUrl(): string {
+  const start = futureDateISO(90);
+  const end   = futureDateISO(121);
+  return `/search/?sort=date&order=asc&startdate=${start}&enddate=${end}&price=0%2C50000%2B`;
+}
 
 export class SearchPage {
   // Prod uses "View details"; dev uses "More details" — match both to work across environments.
@@ -13,7 +16,7 @@ export class SearchPage {
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto(SEARCH_URL);
+    await this.page.goto(searchUrl());
     await this.page.waitForLoadState('domcontentloaded');
     return this;
   }
