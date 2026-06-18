@@ -2,10 +2,10 @@ import { Page } from '@playwright/test';
 
 export class CruiseDetailPage {
   // Desktop: primary CTA. century-cypress uses .book-now-cta; visioncruise uses .booking-button.
-  private readonly bookNowCta = this.page.locator('a.book-now-cta, a.booking-button').first();
+  private readonly desktopBookNow = this.page.locator('a.book-now-cta, a.booking-button').first();
   // Mobile: sticky footer "Book Now" link (capital N — distinguishes it from the
   // stateroom-specific "Book now" links in the page body)
-  private readonly stickyBookNow = this.page.getByRole('link', { name: 'Book Now', exact: true });
+  private readonly mobileBookNow = this.page.getByRole('link', { name: 'Book Now', exact: true });
   private readonly cruiseName = this.page.getByRole('heading', { level: 1 }).first();
 
   constructor(private readonly page: Page) {}
@@ -20,9 +20,13 @@ export class CruiseDetailPage {
     return (await this.cruiseName.textContent()) ?? '';
   }
 
+  getBookNowCta(isMobile: boolean) {
+    return isMobile ? this.mobileBookNow : this.desktopBookNow;
+  }
+
   async bookNow() {
     const isMobile = (this.page.viewportSize()?.width ?? 1280) < 768;
-    const link = isMobile ? this.stickyBookNow : this.bookNowCta;
+    const link = this.getBookNowCta(isMobile);
     // Extract href and navigate directly — some sites have card overlays or sticky
     // banners that intercept pointer events on the CTA even when it's visible.
     const href = await link.getAttribute('href');

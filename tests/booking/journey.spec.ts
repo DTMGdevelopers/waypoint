@@ -114,12 +114,7 @@ test.describe('Cruise detail page', () => {
     await page.goto(TEST_CRUISE_PATH);
     const cruiseDetail = new CruiseDetailPage(page);
     await cruiseDetail.waitForLoad();
-    if (isMobile) {
-      await expect(page.getByRole('link', { name: 'Book Now', exact: true })).toBeVisible();
-    } else {
-      // century-cypress: a.book-now-cta  /  visioncruise: a.booking-button
-      await expect(page.locator('a.book-now-cta, a.booking-button').first()).toBeVisible();
-    }
+    await expect(cruiseDetail.getBookNowCta(isMobile)).toBeVisible();
   });
 });
 
@@ -127,10 +122,10 @@ test.describe('Occupancy page', () => {
   test('adults, children and infants selects are present', async ({ page }) => {
     await page.goto(TEST_OCCUPANCY_PATH);
     await page.waitForLoadState('domcontentloaded');
-    // century-cypress: #field_enquiry_*  /  visioncruise: input[name="adults"] etc.
+    const occupancy = new OccupancyPage(page);
     // Not all sites expose an infants field — only assert adults and children.
-    await expect(page.locator('#field_enquiry_adults, input[name="adults"]')).toBeAttached();
-    await expect(page.locator('#field_enquiry_children, input[name="children"]')).toBeAttached();
-    await expect(page.getByRole('link', { name: 'Continue' }).first()).toBeVisible();
+    await expect(occupancy.adults).toBeAttached();
+    await expect(occupancy.children).toBeAttached();
+    await expect(occupancy.continueButton).toBeVisible();
   });
 });

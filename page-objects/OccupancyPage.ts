@@ -11,6 +11,10 @@ export class OccupancyPage {
 
   constructor(private readonly page: Page) {}
 
+  get adults()   { return this.adultsSelect; }
+  get children() { return this.childrenSelect; }
+  get continueButton() { return this.continueLink; }
+
   async waitForLoad() {
     await this.page.waitForURL(/\/occupancy/);
     await this.page.waitForLoadState('domcontentloaded');
