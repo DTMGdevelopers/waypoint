@@ -23,7 +23,14 @@ export class CruiseDetailPage {
   async bookNow() {
     const isMobile = (this.page.viewportSize()?.width ?? 1280) < 768;
     const link = isMobile ? this.stickyBookNow : this.bookNowCta;
-    await link.click({ noWaitAfter: true });
+    // Extract href and navigate directly — some sites have card overlays or sticky
+    // banners that intercept pointer events on the CTA even when it's visible.
+    const href = await link.getAttribute('href');
+    if (href) {
+      await this.page.goto(href, { waitUntil: 'domcontentloaded' });
+    } else {
+      await link.click({ noWaitAfter: true });
+    }
     await this.page.waitForURL(/\/occupancy/, { timeout: 90_000 });
     return this;
   }

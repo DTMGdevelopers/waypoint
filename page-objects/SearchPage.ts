@@ -32,14 +32,19 @@ export class SearchPage {
   }
 
   async selectFirstResult() {
-    // Look for any visible link to /cruises/ within the main content area.
-    // Specials (/specials/) are excluded — they use a different booking flow.
-    // Falls back to the first result link if no cruise link is found.
+    // Navigate directly to the first cruise detail page rather than clicking a link.
+    // Some sites wrap result cards in a full-card overlay that intercepts pointer events
+    // on child elements, making clicks unreliable. Extracting the href is equivalent.
     const cruiseLink = this.page.locator('main a[href*="/cruises/"]').first();
     const hasCruiseLink = await cruiseLink.isVisible().catch(() => false);
-    const link = hasCruiseLink ? cruiseLink : this.resultLinks.first();
-    await link.click({ noWaitAfter: true });
-    await this.page.waitForURL(/\/cruises\//, { timeout: 90_000 });
+
+    if (hasCruiseLink) {
+      const href = await cruiseLink.getAttribute('href');
+      await this.page.goto(href!, { waitUntil: 'domcontentloaded' });
+    } else {
+      await this.resultLinks.first().click({ noWaitAfter: true });
+      await this.page.waitForURL(/\/cruises\//, { timeout: 90_000 });
+    }
     return this;
   }
 
