@@ -106,8 +106,10 @@ test.describe('Search results page', () => {
 
 // Paths configured per-site via environment variables.
 // Defaults match century-cypress; override in GitHub Actions variables for other sites.
-const TEST_CRUISE_PATH = process.env.TEST_CRUISE_PATH ?? '/cruises/2147919/spain-and-france/';
-const TEST_OCCUPANCY_PATH = process.env.TEST_OCCUPANCY_PATH ?? '/book-a-cruise/2147919/occupancy/?occupancy=2-0-0-0-0';
+// Use || not ?? — GitHub Actions passes empty string when var is unset, and ?? only
+// falls back on null/undefined, not ''.
+const TEST_CRUISE_PATH = process.env.TEST_CRUISE_PATH || '/cruises/2147919/spain-and-france/';
+const TEST_OCCUPANCY_PATH = process.env.TEST_OCCUPANCY_PATH || '/book-a-cruise/2147919/occupancy/?occupancy=2-0-0-0-0';
 
 test.describe('Cruise detail page', () => {
   test('Book Now CTA is present', async ({ page, isMobile }) => {

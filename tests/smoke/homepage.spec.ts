@@ -111,7 +111,10 @@ test.describe('Homepage', () => {
         !e.includes('Cross-Origin') &&
         !e.includes('CORS') &&
         // Theme bug on some sites: getComputedStyle called with a non-Element argument
-        !e.includes('getComputedStyle'),
+        !e.includes('getComputedStyle') &&
+        // Booking plugin pagination script errors when search meta is absent (e.g.
+        // homepage has preload_search:true but no date params → API returns no meta)
+        !e.includes('t.meta.current_page'),
     );
     expect(critical, `Uncaught JS errors: ${critical.join('; ')}`).toHaveLength(0);
   });

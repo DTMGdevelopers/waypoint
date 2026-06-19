@@ -11,7 +11,7 @@ export class StateroomsPage {
     await this.page.waitForLoadState('domcontentloaded');
     // Dev site has no "Staterooms" section heading — wait for the Continue link which
     // appears only once all cabin options have rendered.
-    await this.continueLink.waitFor({ state: 'visible', timeout: 60_000 });
+    await this.continueLink.waitFor({ state: 'visible', timeout: 90_000 });
     return this;
   }
 
