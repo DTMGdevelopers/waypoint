@@ -6,7 +6,7 @@ import { futureDateISO } from '../helpers/testData';
 function searchUrl(): string {
   const start = futureDateISO(90);
   const end   = futureDateISO(121);
-  return `/search/?sort=date&order=asc&startdate=${start}&enddate=${end}&price=0%2C50000%2B`;
+  return `/search/?startdate=${start}&enddate=${end}`;
 }
 
 export class SearchPage {
