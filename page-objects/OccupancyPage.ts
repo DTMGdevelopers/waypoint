@@ -1,11 +1,13 @@
 import { Page } from '@playwright/test';
 
 export class OccupancyPage {
-  // century-cypress uses custom-styled dropdowns (#field_enquiry_*).
-  // visioncruise uses hidden inputs (input[name="adults"] etc.).
-  private readonly adultsSelect = this.page.locator('#field_enquiry_adults, input[name="adults"]');
-  private readonly childrenSelect = this.page.locator('#field_enquiry_children, input[name="children"]');
-  private readonly infantsSelect = this.page.locator('#field_enquiry_infants, input[name="infants"]');
+  // century-cypress has both a visible select (#field_enquiry_*) AND a hidden
+  // input (name="adults") — the compound selector matches both. Use .first() to
+  // suppress strict-mode violations; either element confirms the page loaded.
+  // visioncruise only has the hidden input, so .first() is a no-op there.
+  private readonly adultsSelect = this.page.locator('#field_enquiry_adults, input[name="adults"]').first();
+  private readonly childrenSelect = this.page.locator('#field_enquiry_children, input[name="children"]').first();
+  private readonly infantsSelect = this.page.locator('#field_enquiry_infants, input[name="infants"]').first();
   // "Continue" is rendered as a <a> link, not a <button>.
   private readonly continueLink = this.page.getByRole('link', { name: 'Continue' }).first();
 
