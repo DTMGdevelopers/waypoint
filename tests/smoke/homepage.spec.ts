@@ -39,9 +39,11 @@ test.describe('Homepage', () => {
   // ── Global chrome ─────────────────────────────────────────────────────────
 
   test('site logo is visible in the header', async ({ page }) => {
-    // Matches: <a href="/"><img alt="...logo..."></a> or role=img with brand name
+    // data-cruiseappy="site_logo" is the stable hook — add it to the logo <a> in header.php.
+    // Falls back to structural selectors for sites not yet updated.
     const logo =
-      page.getByRole('img', { name: /waypoint|logo/i })
+      page.locator('[data-cruiseappy="site_logo"]')
+        .or(page.getByRole('img', { name: /waypoint|logo/i }))
         .or(page.locator('header').locator('a[href="/"] img'))
         .or(page.locator('header [class*="logo"]'))
         .first();
@@ -56,7 +58,7 @@ test.describe('Homepage', () => {
       //
       // CLL (Bootstrap): nav is hidden on mobile via d-none d-lg-flex with no toggle button —
       // the header element is the minimal proof of navigation chrome.
-      const mobileNavAttr = page.locator('[data-cruiseappy="mobile-nav"]');
+      const mobileNavAttr = page.locator('[data-cruiseappy="mobile_nav"]');
       const nav = page.getByRole('navigation');
       const toggle = page
         .getByRole('button', { name: /menu|nav|toggle/i })
@@ -70,7 +72,7 @@ test.describe('Homepage', () => {
       const hasHeader = await header.isVisible().catch(() => false);
       expect(
         hasMobileNavAttr || hasNav || hasToggle || hasHeader,
-        'Expected nav landmark, toggle, data-cruiseappy="mobile-nav", or header on mobile',
+        'Expected nav landmark, toggle, data-cruiseappy="mobile_nav", or header on mobile',
       ).toBe(true);
     } else {
       await expect(page.getByRole('navigation').first()).toBeVisible();
@@ -88,7 +90,11 @@ test.describe('Homepage', () => {
   test('search widget filters are present', async ({ page }) => {
     // Each site's search widget uses elements with "search-form" in the class name.
     // This is intentionally broad so it works across different theme label variations.
-    const searchWidget = page.locator('[class*="search-form"]').first();
+    // data-cruiseappy="search_form" is the stable hook; fall back to CSS class for older sites.
+    const searchWidget = page
+      .locator('[data-cruiseappy="search_form"]')
+      .or(page.locator('[class*="search-form"]'))
+      .first();
     await expect(searchWidget).toBeVisible();
   });
 

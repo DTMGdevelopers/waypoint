@@ -34,9 +34,10 @@ export class SearchPage {
     // well past 120s under server load. Raise to 180s to survive those spikes.
     await this.resultLinks.first().waitFor({ state: 'visible', timeout: 180_000 });
     // Some themes show a loading overlay after results render that blocks clicks.
-    // Wait for it to disappear before returning control to the caller.
+    // data-cruiseappy="search_results_loading" is the stable hook; fall back to
+    // the CSS-class selector for sites not yet updated.
     await this.page
-      .locator('#search-loading-overlay.is-visible')
+      .locator('[data-cruiseappy="search_results_loading"], #search-loading-overlay.is-visible')
       .waitFor({ state: 'hidden', timeout: 15_000 })
       .catch(() => {});
     return this;

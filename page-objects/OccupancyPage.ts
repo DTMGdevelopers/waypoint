@@ -1,13 +1,20 @@
 import { Page } from '@playwright/test';
 
 export class OccupancyPage {
-  // century-cypress has both a visible select (#field_enquiry_*) AND a hidden
-  // input (name="adults") — the compound selector matches both. Use .first() to
-  // suppress strict-mode violations; either element confirms the page loaded.
-  // visioncruise only has the hidden input, so .first() is a no-op there.
-  private readonly adultsSelect = this.page.locator('#field_enquiry_adults, input[name="adults"]').first();
-  private readonly childrenSelect = this.page.locator('#field_enquiry_children, input[name="children"]').first();
-  private readonly infantsSelect = this.page.locator('#field_enquiry_infants, input[name="infants"]').first();
+  // data-cruiseappy="occupancy_adults/children/infants" are the stable hooks.
+  // Fall back to WP form field IDs/names for older sites not yet updated.
+  private readonly adultsSelect = this.page
+    .locator('[data-cruiseappy="occupancy_adults"]')
+    .or(this.page.locator('#field_enquiry_adults, input[name="adults"]'))
+    .first();
+  private readonly childrenSelect = this.page
+    .locator('[data-cruiseappy="occupancy_children"]')
+    .or(this.page.locator('#field_enquiry_children, input[name="children"]'))
+    .first();
+  private readonly infantsSelect = this.page
+    .locator('[data-cruiseappy="occupancy_infants"]')
+    .or(this.page.locator('#field_enquiry_infants, input[name="infants"]'))
+    .first();
   // data-cruiseappy="booking_occupancy" is the stable plugin attribute for the Continue CTA.
   // Fall back to role+text for older sites without the attribute.
   private readonly continueLink = this.page
