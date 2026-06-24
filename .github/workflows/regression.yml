@@ -7,35 +7,19 @@ on:
     # Nightly at 02:00 UTC against the default BASE_URL variable
     - cron: '0 2 * * *'
 
-  # Manual trigger — optionally override the target URL and per-site paths
+  # Manual trigger — optionally override the target URL
   workflow_dispatch:
     inputs:
       base_url:
         description: 'Site URL to test (leave blank to use BASE_URL variable)'
         required: false
         default: ''
-      test_cruise_path:
-        description: 'Path to a cruise detail page for the cruise-detail step test'
-        required: false
-        default: ''
-      test_occupancy_path:
-        description: 'Path + query string for the occupancy step test'
-        required: false
-        default: ''
 
-  # Reusable — called from any theme repo
+  # Reusable — called from any theme repo; only base_url is needed
   workflow_call:
     inputs:
       base_url:
         description: 'Site URL to test'
-        type: string
-        required: false
-      test_cruise_path:
-        description: 'Path to a cruise detail page for step tests'
-        type: string
-        required: false
-      test_occupancy_path:
-        description: 'Path + query string for the occupancy step test'
         type: string
         required: false
     secrets:
@@ -47,14 +31,12 @@ on:
         required: false
 
 env:
-  # inputs.* (from workflow_dispatch / workflow_call) take priority;
-  # fall back to repository variables for push / schedule triggers.
+  # inputs.base_url (from workflow_dispatch / workflow_call) takes priority;
+  # falls back to the repository variable for push / schedule triggers.
   BASE_URL: ${{ inputs.base_url || vars.BASE_URL }}
   TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
   TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
   PAYMENT_PROVIDER: ${{ secrets.PAYMENT_PROVIDER || 'stripe' }}
-  TEST_CRUISE_PATH: ${{ inputs.test_cruise_path || vars.TEST_CRUISE_PATH }}
-  TEST_OCCUPANCY_PATH: ${{ inputs.test_occupancy_path || vars.TEST_OCCUPANCY_PATH }}
   CI: 'true'
 
 jobs:

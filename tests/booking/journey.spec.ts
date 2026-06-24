@@ -94,26 +94,29 @@ test.describe('Search results page', () => {
     expect(await searchPage.getResultCount()).toBeGreaterThanOrEqual(1);
   });
 
-  test('each result has a details link', async ({ page }) => {
+  test('each result has a view_cruise link', async ({ page }) => {
     test.setTimeout(210_000);
     const searchPage = new SearchPage(page);
     await searchPage.goto();
     await searchPage.waitForResults();
-    // Prod: "View details" / Dev: "More details" — SearchPage.resultLinks handles both
-    await expect(page.getByRole('link', { name: /^(view|more) details$/i }).first()).toBeVisible();
+    // data-cruiseappy="view_cruise" is the stable attribute; fall back to role+text
+    // for older sites without it.
+    const resultLink = page
+      .locator('[data-cruiseappy="view_cruise"]')
+      .or(page.getByRole('link', { name: /^(view|more) details$/i }))
+      .first();
+    await expect(resultLink).toBeVisible();
   });
 });
 
-// Paths configured per-site via environment variables.
-// Defaults match century-cypress; override in GitHub Actions variables for other sites.
-// Use || not ?? — GitHub Actions passes empty string when var is unset, and ?? only
-// falls back on null/undefined, not ''.
-const TEST_CRUISE_PATH = process.env.TEST_CRUISE_PATH || '/cruises/2147919/spain-and-france/';
-const TEST_OCCUPANCY_PATH = process.env.TEST_OCCUPANCY_PATH || '/book-a-cruise/2147919/occupancy/?occupancy=2-0-0-0-0';
-
 test.describe('Cruise detail page', () => {
   test('Book Now CTA is present', async ({ page, isMobile }) => {
-    await page.goto(TEST_CRUISE_PATH);
+    // Navigate dynamically via data-cruiseappy="view_cruise" — no hardcoded path needed.
+    test.setTimeout(240_000);
+    const searchPage = new SearchPage(page);
+    await searchPage.goto();
+    await searchPage.waitForResults();
+    await searchPage.selectFirstResult();
     const cruiseDetail = new CruiseDetailPage(page);
     await cruiseDetail.waitForLoad();
     await expect(cruiseDetail.getBookNowCta(isMobile)).toBeVisible();
@@ -122,9 +125,17 @@ test.describe('Cruise detail page', () => {
 
 test.describe('Occupancy page', () => {
   test('adults, children and infants selects are present', async ({ page }) => {
-    await page.goto(TEST_OCCUPANCY_PATH);
-    await page.waitForLoadState('domcontentloaded');
+    // Navigate dynamically via data-cruiseappy="book_cruise" — no hardcoded path needed.
+    test.setTimeout(360_000);
+    const searchPage = new SearchPage(page);
+    await searchPage.goto();
+    await searchPage.waitForResults();
+    await searchPage.selectFirstResult();
+    const cruiseDetail = new CruiseDetailPage(page);
+    await cruiseDetail.waitForLoad();
+    await cruiseDetail.bookNow();
     const occupancy = new OccupancyPage(page);
+    await occupancy.waitForLoad();
     // Not all sites expose an infants field — only assert adults and children.
     await expect(occupancy.adults).toBeAttached();
     await expect(occupancy.children).toBeAttached();
