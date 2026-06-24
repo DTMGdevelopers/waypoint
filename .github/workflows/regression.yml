@@ -14,10 +14,6 @@ on:
         description: 'Site URL to test (leave blank to use BASE_URL variable)'
         required: false
         default: ''
-      search_path:
-        description: 'Search page path, may include query string (e.g. /lv/meklesana/?traveltype=ocean)'
-        required: false
-        default: ''
       test_cruise_path:
         description: 'Path to a cruise detail page for the cruise-detail step test'
         required: false
@@ -32,10 +28,6 @@ on:
     inputs:
       base_url:
         description: 'Site URL to test'
-        type: string
-        required: false
-      search_path:
-        description: 'Search page path, may include query string'
         type: string
         required: false
       test_cruise_path:
@@ -58,7 +50,6 @@ env:
   # inputs.* (from workflow_dispatch / workflow_call) take priority;
   # fall back to repository variables for push / schedule triggers.
   BASE_URL: ${{ inputs.base_url || vars.BASE_URL }}
-  SEARCH_PATH: ${{ inputs.search_path || vars.SEARCH_PATH }}
   TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
   TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
   PAYMENT_PROVIDER: ${{ secrets.PAYMENT_PROVIDER || 'stripe' }}

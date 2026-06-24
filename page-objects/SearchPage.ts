@@ -1,19 +1,6 @@
 import { Page } from '@playwright/test';
 import { futureDateISO } from '../helpers/testData';
 
-// Use || not ?? — GitHub Actions passes '' for unset vars; ?? only catches null/undefined.
-const SEARCH_PATH = process.env.SEARCH_PATH || '/search/';
-
-// Rolling 31-day window starting 3 months from today — always bookable,
-// never needs manual updating as dates pass.
-function searchUrl(): string {
-  const start = futureDateISO(90);
-  const end   = futureDateISO(121);
-  // SEARCH_PATH may already contain a query string (e.g. /lv/meklesana/?traveltype=ocean).
-  const sep = SEARCH_PATH.includes('?') ? '&' : '?';
-  return `${SEARCH_PATH}${sep}startdate=${start}&enddate=${end}`;
-}
-
 export class SearchPage {
   // data-cruiseappy="view_cruise" is set on AJAX-rendered result card links (Latvia theme and newer).
   // Fall back to role+text for older sites (visioncruise, century-cypress) where the attribute is absent.
@@ -24,8 +11,21 @@ export class SearchPage {
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto(searchUrl());
-    await this.page.waitForLoadState('domcontentloaded');
+    // Discover the search URL from the homepage rather than hardcoding a path.
+    // data-cruiseappy="search" is present on every site's search CTA regardless
+    // of language or URL structure (e.g. /search/ vs /lv/meklesana/).
+    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+    const searchAnchor = this.page.locator('[data-cruiseappy="search"]').first();
+    const searchHref = await searchAnchor.getAttribute('href').catch(() => null)
+      ?? '/search/';
+
+    // Append rolling 3-month date window. searchHref may already carry query params.
+    const start = futureDateISO(90);
+    const end   = futureDateISO(121);
+    const sep = searchHref.includes('?') ? '&' : '?';
+    await this.page.goto(`${searchHref}${sep}startdate=${start}&enddate=${end}`, {
+      waitUntil: 'domcontentloaded',
+    });
     return this;
   }
 
