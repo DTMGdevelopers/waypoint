@@ -1,13 +1,17 @@
 import { Page } from '@playwright/test';
 
 export class PassengerFormPage {
-  private readonly firstNameInput = this.page.getByRole('textbox', { name: /first name/i });
-
   constructor(private readonly page: Page) {}
 
   async waitForLoad() {
     await this.page.waitForLoadState('domcontentloaded');
-    await this.firstNameInput.first().waitFor({ state: 'visible', timeout: 30_000 });
+    // Label wording varies by site/theme (First Name, Forename, Given Name…).
+    // Wait for ANY visible text/email input instead of a specific label.
+    // 90s matches the AJAX-heavy booking flow on slower WordPress stacks.
+    await this.page
+      .locator('input[type="text"], input[type="email"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 90_000 });
     return this;
   }
 
