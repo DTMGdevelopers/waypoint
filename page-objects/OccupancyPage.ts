@@ -8,8 +8,12 @@ export class OccupancyPage {
   private readonly adultsSelect = this.page.locator('#field_enquiry_adults, input[name="adults"]').first();
   private readonly childrenSelect = this.page.locator('#field_enquiry_children, input[name="children"]').first();
   private readonly infantsSelect = this.page.locator('#field_enquiry_infants, input[name="infants"]').first();
-  // "Continue" is rendered as a <a> link, not a <button>.
-  private readonly continueLink = this.page.getByRole('link', { name: 'Continue' }).first();
+  // data-cruiseappy="booking_occupancy" is the stable plugin attribute for the Continue CTA.
+  // Fall back to role+text for older sites without the attribute.
+  private readonly continueLink = this.page
+    .locator('[data-cruiseappy="booking_occupancy"]')
+    .or(this.page.getByRole('link', { name: /continue/i }))
+    .first();
 
   constructor(private readonly page: Page) {}
 

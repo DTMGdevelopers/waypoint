@@ -2,7 +2,13 @@ import { Page } from '@playwright/test';
 
 export class CabinsPage {
   private readonly selectButtons = this.page.getByRole('button', { name: 'Select' });
-  private readonly continueLink = this.page.getByRole('link', { name: 'Continue' }).first();
+  // data-cruiseappy="booking_deck_room" is a <button type="submit"> in the Latvia theme.
+  // Fall back to Continue link/button for older sites.
+  private readonly continueBtn = this.page
+    .locator('[data-cruiseappy="booking_deck_room"]')
+    .or(this.page.getByRole('button', { name: /continue/i }))
+    .or(this.page.getByRole('link', { name: /continue/i }))
+    .first();
 
   constructor(private readonly page: Page) {}
 
@@ -17,8 +23,8 @@ export class CabinsPage {
     if (selectCount > 0) {
       await this.selectButtons.first().click({ noWaitAfter: true });
     } else {
-      await this.continueLink.scrollIntoViewIfNeeded();
-      await this.continueLink.click({ noWaitAfter: true });
+      await this.continueBtn.scrollIntoViewIfNeeded();
+      await this.continueBtn.click({ noWaitAfter: true });
     }
     await this.page.waitForURL(/\/passengers\//, { timeout: 90_000 });
     return this;

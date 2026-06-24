@@ -1,17 +1,25 @@
 import { Page } from '@playwright/test';
 import { futureDateISO } from '../helpers/testData';
 
+// Use || not ?? — GitHub Actions passes '' for unset vars; ?? only catches null/undefined.
+const SEARCH_PATH = process.env.SEARCH_PATH || '/search/';
+
 // Rolling 31-day window starting 3 months from today — always bookable,
 // never needs manual updating as dates pass.
 function searchUrl(): string {
   const start = futureDateISO(90);
   const end   = futureDateISO(121);
-  return `/search/?startdate=${start}&enddate=${end}`;
+  // SEARCH_PATH may already contain a query string (e.g. /lv/meklesana/?traveltype=ocean).
+  const sep = SEARCH_PATH.includes('?') ? '&' : '?';
+  return `${SEARCH_PATH}${sep}startdate=${start}&enddate=${end}`;
 }
 
 export class SearchPage {
-  // Prod uses "View details"; dev uses "More details" — match both to work across environments.
-  private readonly resultLinks = this.page.getByRole('link', { name: /^(view|more) details$/i });
+  // data-cruiseappy="view_cruise" is set on AJAX-rendered result card links (Latvia theme and newer).
+  // Fall back to role+text for older sites (visioncruise, century-cypress) where the attribute is absent.
+  private readonly resultLinks = this.page
+    .locator('[data-cruiseappy="view_cruise"]')
+    .or(this.page.getByRole('link', { name: /^(view|more) details$/i }));
 
   constructor(private readonly page: Page) {}
 
