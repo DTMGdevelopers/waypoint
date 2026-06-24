@@ -28,8 +28,9 @@ export class CruiseDetailPage {
   async bookNow() {
     const isMobile = (this.page.viewportSize()?.width ?? 1280) < 768;
     const link = this.getBookNowCta(isMobile);
-    // Extract href and navigate directly — some sites have card overlays or sticky
-    // banners that intercept pointer events on the CTA even when it's visible.
+    // On some cruises the CTA is AJAX-rendered after domcontentloaded — wait for
+    // it explicitly before getAttribute() (which uses the shorter actionTimeout).
+    await link.waitFor({ state: 'visible', timeout: 30_000 });
     const href = await link.getAttribute('href');
     if (href) {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
