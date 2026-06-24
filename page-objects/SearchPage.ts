@@ -43,18 +43,16 @@ export class SearchPage {
   }
 
   async selectFirstResult() {
-    // Navigate directly to the first cruise detail page rather than clicking a link.
-    // Some sites wrap result cards in a full-card overlay that intercepts pointer events
-    // on child elements, making clicks unreliable. Extracting the href is equivalent.
-    const cruiseLink = this.page.locator('main a[href*="/cruises/"]').first();
-    const hasCruiseLink = await cruiseLink.isVisible().catch(() => false);
-
-    if (hasCruiseLink) {
-      const href = await cruiseLink.getAttribute('href');
-      await this.page.goto(href!, { waitUntil: 'domcontentloaded' });
+    // Read the href directly from the result link — data-cruiseappy="view_cruise"
+    // always carries the correct URL regardless of language or URL structure
+    // (e.g. /lv/kruizi/ vs /cruises/). Navigating by href avoids click-interception
+    // issues from full-card overlays on some themes.
+    const href = await this.resultLinks.first().getAttribute('href').catch(() => null);
+    if (href) {
+      await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
       await this.resultLinks.first().click({ noWaitAfter: true });
-      await this.page.waitForURL(/\/cruises\//, { timeout: 90_000 });
+      await this.page.waitForLoadState('domcontentloaded');
     }
     return this;
   }

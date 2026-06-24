@@ -50,9 +50,13 @@ test.describe('Homepage', () => {
 
   test('primary navigation is visible', async ({ page, isMobile }) => {
     if (isMobile) {
-      // On mobile the nav collapses; check for a toggle button or nav landmark
+      // On mobile the nav collapses behind a toggle. Themes vary: some use an
+      // aria-labelled button, others (Bootstrap) use a class-only .navbar-toggler.
       const nav = page.getByRole('navigation');
-      const toggle = page.getByRole('button', { name: /menu|nav|toggle/i }).first();
+      const toggle = page
+        .getByRole('button', { name: /menu|nav|toggle/i })
+        .or(page.locator('[class*="navbar-toggler"], [class*="hamburger"], [class*="menu-toggle"]'))
+        .first();
       const hasNav = await nav.isVisible();
       const hasToggle = await toggle.isVisible();
       expect(hasNav || hasToggle, 'Expected a nav landmark or menu toggle on mobile').toBe(true);

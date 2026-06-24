@@ -37,8 +37,10 @@ test('booking journey: search to passengers form', async ({ page }) => {
   // ── Step 2: Cruise detail ─────────────────────────────────────────────────
   await test.step('navigate to cruise detail page', async () => {
     await searchPage.selectFirstResult();
+    // waitForLoad asserts the h1 is visible — that's sufficient proof we're on a
+    // cruise detail page. Don't assert the URL pattern here: it's language-specific
+    // (e.g. /cruises/ vs /lv/kruizi/) and varies across sites.
     await cruiseDetail.waitForLoad();
-    expect(page.url()).toMatch(/\/cruises\//);
   });
 
   // ── Step 3: Occupancy selection ───────────────────────────────────────────
