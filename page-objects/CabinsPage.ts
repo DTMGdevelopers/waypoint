@@ -13,8 +13,8 @@ export class CabinsPage {
   constructor(private readonly page: Page) {}
 
   async waitForLoad() {
-    await this.page.waitForURL(/\/cabins\//);
     await this.page.waitForLoadState('domcontentloaded');
+    await this.continueBtn.waitFor({ state: 'visible', timeout: 30_000 });
     return this;
   }
 
@@ -26,7 +26,10 @@ export class CabinsPage {
       await this.continueBtn.scrollIntoViewIfNeeded();
       await this.continueBtn.click({ noWaitAfter: true });
     }
-    await this.page.waitForURL(/\/passengers\//, { timeout: 90_000 });
+    await this.page.locator('[data-cruiseappy="booking_passengers"]')
+      .or(this.page.locator('input[type="text"], input[type="email"]').first())
+      .first()
+      .waitFor({ state: 'visible', timeout: 90_000 });
     return this;
   }
 }

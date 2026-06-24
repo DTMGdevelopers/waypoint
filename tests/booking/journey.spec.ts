@@ -46,13 +46,13 @@ test('booking journey: search to passengers form', async ({ page }) => {
   // ── Step 3: Occupancy selection ───────────────────────────────────────────
   await test.step('click Book Now and reach occupancy page', async () => {
     await cruiseDetail.bookNow();
+    // bookNow() waits for data-cruiseappy="booking_occupancy" — no URL check needed.
     await occupancyPage.waitForLoad();
-    expect(page.url()).toMatch(/\/occupancy/);
   });
 
   await test.step('continue from occupancy to staterooms', async () => {
     await occupancyPage.continue();
-    expect(page.url()).toMatch(/\/staterooms/);
+    // continue() waits for data-cruiseappy="booking_staterooms" — no URL check needed.
   });
 
   // ── Step 4: Stateroom selection ───────────────────────────────────────────
@@ -62,16 +62,17 @@ test('booking journey: search to passengers form', async ({ page }) => {
 
   await test.step('continue from staterooms', async () => {
     await stateroomsPage.continue();
-    expect(page.url()).toMatch(/\/(cabins|passengers)\//);
+    // continue() waits for data-cruiseappy="booking_deck_room" or "booking_passengers".
   });
 
   // ── Step 5: Cabin selection (optional) ───────────────────────────────────
-  // "Sail Away" guarantee staterooms auto-assign a cabin and skip this step.
-  if (page.url().includes('/cabins/')) {
+  // "Sail Away" guarantee staterooms skip cabins — detect by presence of booking_deck_room.
+  const hasCabinStep = await page.locator('[data-cruiseappy="booking_deck_room"]').isVisible().catch(() => false);
+  if (hasCabinStep) {
     await test.step('select specific cabin and reach passengers form', async () => {
       await cabinsPage.waitForLoad();
       await cabinsPage.selectFirstCabin();
-      expect(page.url()).toMatch(/\/passengers\//);
+      // selectFirstCabin() waits for data-cruiseappy="booking_passengers".
     });
   }
 

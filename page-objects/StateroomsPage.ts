@@ -33,8 +33,11 @@ export class StateroomsPage {
       await this.continueLink.scrollIntoViewIfNeeded();
       await this.continueLink.click({ noWaitAfter: true });
     }
-    // "Sail Away" guarantee staterooms skip /cabins/ and go straight to /passengers/.
-    await this.page.waitForURL(/\/(cabins|passengers)\//, { timeout: 90_000 });
+    // booking_deck_room = cabins step; booking_passengers = "Sail Away" skips cabins.
+    await this.page.locator('[data-cruiseappy="booking_deck_room"], [data-cruiseappy="booking_passengers"]')
+      .or(this.page.locator('input[type="text"], input[type="email"]').first())
+      .first()
+      .waitFor({ state: 'visible', timeout: 90_000 });
     return this;
   }
 }

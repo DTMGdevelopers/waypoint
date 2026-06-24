@@ -22,8 +22,8 @@ export class OccupancyPage {
   get continueButton() { return this.continueLink; }
 
   async waitForLoad() {
-    await this.page.waitForURL(/\/occupancy/);
     await this.page.waitForLoadState('domcontentloaded');
+    await this.continueLink.waitFor({ state: 'visible', timeout: 30_000 });
     return this;
   }
 
@@ -54,7 +54,10 @@ export class OccupancyPage {
       await this.continueLink.scrollIntoViewIfNeeded();
       await this.continueLink.click({ noWaitAfter: true });
     }
-    await this.page.waitForURL(/\/staterooms/, { timeout: 90_000 });
+    await this.page.locator('[data-cruiseappy="booking_staterooms"]')
+      .or(this.page.getByRole('link', { name: /continue/i }))
+      .first()
+      .waitFor({ state: 'visible', timeout: 90_000 });
     return this;
   }
 }

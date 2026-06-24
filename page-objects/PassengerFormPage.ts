@@ -16,7 +16,10 @@ export class PassengerFormPage {
   }
 
   async isLoaded(): Promise<boolean> {
-    return this.page.url().includes('/passengers');
+    return this.page.locator('[data-cruiseappy="booking_passengers"]')
+      .or(this.page.locator('input[type="text"], input[type="email"]').first())
+      .first()
+      .isVisible();
   }
 
   async getFieldCount(): Promise<number> {

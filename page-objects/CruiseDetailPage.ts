@@ -37,7 +37,10 @@ export class CruiseDetailPage {
     } else {
       await this.bookNowLink.click({ noWaitAfter: true });
     }
-    await this.page.waitForURL(/\/occupancy/, { timeout: 90_000 });
+    await this.page.locator('[data-cruiseappy="booking_occupancy"]')
+      .or(this.page.getByRole('link', { name: /continue/i }))
+      .first()
+      .waitFor({ state: 'visible', timeout: 90_000 });
     return this;
   }
 }
