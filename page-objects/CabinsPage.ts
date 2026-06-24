@@ -19,13 +19,23 @@ export class CabinsPage {
   }
 
   async selectFirstCabin() {
-    const selectCount = await this.selectButtons.count();
-    if (selectCount > 0) {
-      await this.selectButtons.first().click({ noWaitAfter: true });
-    } else {
-      await this.continueBtn.scrollIntoViewIfNeeded();
-      await this.continueBtn.click({ noWaitAfter: true });
+    // Wait for AJAX to render cabin rows into #cabin-selection
+    await this.page.locator('#cabin-selection .row').first()
+      .waitFor({ state: 'visible', timeout: 30_000 }).catch(() => null);
+
+    // .select-cabin spans are rendered by booking.js — language-agnostic
+    const selectCabin = this.page.locator('.select-cabin').first();
+    // English "Select" role button — fallback for older sites
+    const selectBtn = this.page.getByRole('button', { name: /^select$/i }).first();
+
+    if (await selectCabin.count() > 0) {
+      await selectCabin.click({ noWaitAfter: true });
+    } else if (await selectBtn.count() > 0) {
+      await selectBtn.click({ noWaitAfter: true });
     }
+    // booking_deck_room form submit: server assigns cabin from the grade
+    await this.continueBtn.scrollIntoViewIfNeeded();
+    await this.continueBtn.click({ noWaitAfter: true });
     await this.page.locator('[data-cruiseappy="booking_passengers"]')
       .or(this.page.locator('input[type="text"], input[type="email"]').first())
       .first()

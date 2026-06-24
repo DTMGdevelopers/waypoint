@@ -24,7 +24,16 @@ export class StateroomsPage {
   }
 
   async continue() {
-    // Try href first, then data-href (Latvia theme stores the URL in data-href, not href).
+    // The booking_staterooms link starts with only data-href; the page JS sets href
+    // after its AJAX response + 100ms setTimeout auto-selects a stateroom grade.
+    // Navigating before that fires means we get the bare base URL (no resultno/gradeno),
+    // and the server rejects the booking. Wait up to 30s for href to appear.
+    await this.page.waitForFunction(() => {
+      const el = document.querySelector('[data-cruiseappy="booking_staterooms"]');
+      return !!(el as HTMLAnchorElement)?.href;
+    }, { timeout: 30_000 }).catch(() => null);
+
+    // Try href first (JS-populated with grade params), then data-href (older sites).
     const href = await this.continueLink.getAttribute('href')
       ?? await this.continueLink.getAttribute('data-href');
     if (href) {
