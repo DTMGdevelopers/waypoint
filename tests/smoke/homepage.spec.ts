@@ -132,7 +132,7 @@ test.describe('Homepage', () => {
     // sites and are not blocking to the user experience.
     const critical = failures.filter(
       (url) =>
-        !url.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff2?|ttf|eot)(\?.*)?$/i) &&
+        !url.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff2?|ttf|eot|mp4|webm|ogv)(\?.*)?$/i) &&
         !url.includes('analytics') &&
         !url.includes('tracking') &&
         !url.includes('hotjar') &&
