@@ -1,10 +1,11 @@
 import { Page } from '@playwright/test';
 
 export class CruiseDetailPage {
-  // Desktop: primary CTA. century-cypress uses .book-now-cta; visioncruise uses .booking-button.
-  private readonly desktopBookNow = this.page.locator('a.book-now-cta, a.booking-button').first();
-  // Mobile: sticky footer "Book Now" link (capital N — distinguishes it from the
-  // stateroom-specific "Book now" links in the page body)
+  // Select by destination URL rather than CSS class — class names vary across
+  // cruise types and themes, but all Book Now CTAs link to the /occupancy/ step.
+  // .first() picks the primary CTA; stateroom-specific links also match.
+  private readonly desktopBookNow = this.page.locator('main a[href*="occupancy"]').first();
+  // Mobile: sticky footer link — still use role+name as a tighter match there.
   private readonly mobileBookNow = this.page.getByRole('link', { name: 'Book Now', exact: true });
   private readonly cruiseName = this.page.getByRole('heading', { level: 1 }).first();
 
