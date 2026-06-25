@@ -44,15 +44,20 @@ export class SearchPage {
   }
 
   async selectFirstResult() {
-    // Read the href directly from the result link — data-cruiseappy="view_cruise"
-    // always carries the correct URL regardless of language or URL structure
-    // (e.g. /lv/kruizi/ vs /cruises/). Navigating by href avoids click-interception
-    // issues from full-card overlays on some themes.
-    const href = await this.resultLinks.first().getAttribute('href').catch(() => null);
+    // Prefer a result card that contains at least one real price (inside/outside/balcony/suite).
+    // Cards where every price shows "call for price" have no data-cruiseappy="result_price"
+    // elements and are skipped — they have no Book Now CTA so the journey test would fail.
+    // Falls back to the first result if no priced cards are found (older sites without the attribute).
+    const bookable = this.page.locator(
+      ':has([data-cruiseappy="result_price"]) [data-cruiseappy="view_cruise"]',
+    );
+    const target = (await bookable.count() > 0) ? bookable : this.resultLinks;
+
+    const href = await target.first().getAttribute('href').catch(() => null);
     if (href) {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
-      await this.resultLinks.first().click({ noWaitAfter: true });
+      await target.first().click({ noWaitAfter: true });
       await this.page.waitForLoadState('domcontentloaded');
     }
     return this;

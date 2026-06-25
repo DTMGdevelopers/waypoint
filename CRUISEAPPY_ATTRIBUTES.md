@@ -42,6 +42,7 @@ advances the journey; tests wait for that CTA to be visible before interacting.
 | Attribute | Element | Status | Notes |
 |---|---|---|---|
 | `data-cruiseappy="view_cruise"` | Each "View details" link in AJAX-rendered result cards | ✅ Implemented | Set in `js/search.js` |
+| `data-cruiseappy="result_price"` | Each cabin-grade price element within a result card (inside, outside, balcony, suite) — **only when a real price is shown** | 🔴 Needed | Omit the attribute when the element shows "call for price". Up to four per card. Tests use `:has([data-cruiseappy="result_price"])` to skip unpriced/enquiry-only cruises and select the first card with at least one real price. |
 | `data-cruiseappy="search_results_loading"` | The loading overlay shown while results are fetching | 🔴 Needed | Currently matched by `#search-loading-overlay.is-visible`; the selector depends on a JS-toggled CSS class |
 
 ### Cruise detail page
