@@ -44,12 +44,12 @@ export class SearchPage {
   }
 
   async selectFirstResult() {
-    // Prefer a result card that contains at least one real price (inside/outside/balcony/suite).
-    // Cards where every price shows "call for price" have no data-cruiseappy="result_price"
-    // elements and are skipped — they have no Book Now CTA so the journey test would fail.
-    // Falls back to the first result if no priced cards are found (older sites without the attribute).
+    // Prefer a result card that has both result_bookable (cruise is bookable) and at least
+    // one result_price (has a real price, not call-for-price). Both must be present —
+    // a priced but non-bookable cruise still won't show a Book Now CTA on the detail page.
+    // Falls back to the first result on older sites without these attributes.
     const bookable = this.page.locator(
-      ':has([data-cruiseappy="result_price"]) [data-cruiseappy="view_cruise"]',
+      ':has([data-cruiseappy="result_bookable"]):has([data-cruiseappy="result_price"]) [data-cruiseappy="view_cruise"]',
     );
     const target = (await bookable.count() > 0) ? bookable : this.resultLinks;
 
