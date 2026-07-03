@@ -1,24 +1,18 @@
 import { Page } from '@playwright/test';
+import { BookingLocators, BookingFallbacks } from '../locators/booking';
+import { resolve } from '../helpers/locatorResolver';
 
 export class OccupancyPage {
-  // data-cruiseappy="occupancy_adults/children/infants" are the stable hooks.
-  // Fall back to WP form field IDs/names for older sites not yet updated.
-  private readonly adultsSelect = this.page
-    .locator('[data-cruiseappy="occupancy_adults"]')
-    .or(this.page.locator('#field_enquiry_adults, input[name="adults"]'))
-    .first();
-  private readonly childrenSelect = this.page
-    .locator('[data-cruiseappy="occupancy_children"]')
-    .or(this.page.locator('#field_enquiry_children, input[name="children"]'))
-    .first();
-  private readonly infantsSelect = this.page
-    .locator('[data-cruiseappy="occupancy_infants"]')
-    .or(this.page.locator('#field_enquiry_infants, input[name="infants"]'))
-    .first();
-  // data-cruiseappy="booking_occupancy" is the stable plugin attribute for the Continue CTA.
-  // Fall back to role+text for older sites without the attribute.
-  private readonly continueLink = this.page
-    .locator('[data-cruiseappy="booking_occupancy"]')
+  private readonly adultsSelect = resolve(
+    this.page, BookingLocators.occupancyAdults, BookingFallbacks.occupancyAdults,
+  ).first();
+  private readonly childrenSelect = resolve(
+    this.page, BookingLocators.occupancyChildren, BookingFallbacks.occupancyChildren,
+  ).first();
+  private readonly infantsSelect = resolve(
+    this.page, BookingLocators.occupancyInfants, BookingFallbacks.occupancyInfants,
+  ).first();
+  private readonly continueLink = resolve(this.page, BookingLocators.occupancyContinue)
     .or(this.page.getByRole('link', { name: /continue/i }))
     .first();
 
@@ -61,7 +55,7 @@ export class OccupancyPage {
       await this.continueLink.scrollIntoViewIfNeeded();
       await this.continueLink.click({ noWaitAfter: true });
     }
-    await this.page.locator('[data-cruiseappy="booking_staterooms"]')
+    await resolve(this.page, BookingLocators.stateroomsContinue)
       .or(this.page.getByRole('link', { name: /continue/i }))
       .first()
       .waitFor({ state: 'visible', timeout: 90_000 });

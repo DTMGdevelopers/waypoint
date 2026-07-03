@@ -5,6 +5,7 @@ import { OccupancyPage } from '../../page-objects/OccupancyPage';
 import { StateroomsPage } from '../../page-objects/StateroomsPage';
 import { CabinsPage } from '../../page-objects/CabinsPage';
 import { PassengerFormPage } from '../../page-objects/PassengerFormPage';
+import { PriceJourney, extractPrice } from '../../helpers/priceValidator';
 
 /**
  * Full booking journey: search → cruise detail → occupancy → staterooms → passengers.
@@ -25,6 +26,7 @@ test('booking journey: search to passengers form', async ({ page }) => {
   const stateroomsPage = new StateroomsPage(page);
   const cabinsPage = new CabinsPage(page);
   const passengerForm = new PassengerFormPage(page);
+  const prices = new PriceJourney();
 
   // ── Step 1: Search results ───────────────────────────────────────────────
   await test.step('search results load with at least one cruise', async () => {
@@ -32,6 +34,13 @@ test('booking journey: search to passengers form', async ({ page }) => {
     await searchPage.waitForResults();
     const count = await searchPage.getResultCount();
     expect(count, 'Expected at least one search result').toBeGreaterThanOrEqual(1);
+
+    // Capture price from first bookable result (best-effort — attribute may not be present)
+    const firstPrice = page.locator('[data-cruiseappy="result_price"]').first();
+    const priceVisible = await firstPrice.isVisible().catch(() => false);
+    if (priceVisible) {
+      prices.record('search-result', await extractPrice(firstPrice));
+    }
   });
 
   // ── Step 2: Cruise detail ─────────────────────────────────────────────────
@@ -82,6 +91,28 @@ test('booking journey: search to passengers form', async ({ page }) => {
     expect(await passengerForm.isLoaded()).toBe(true);
     const fieldCount = await passengerForm.getFieldCount();
     expect(fieldCount, 'Expected passenger form fields').toBeGreaterThan(0);
+
+    // Capture summary panel price (best-effort)
+    const summaryPrice = page.locator('[class*="summary"] [class*="price"], [class*="total"]').first();
+    const summaryVisible = await summaryPrice.isVisible().catch(() => false);
+    if (summaryVisible) {
+      prices.record('passenger-summary', await extractPrice(summaryPrice).catch(() => NaN));
+    }
+  });
+
+  // ── Price consistency check ───────────────────────────────────────────────
+  // Asserts that prices captured at each step match within ±£0.01.
+  // No-ops if fewer than two prices were captured (e.g. attributes not yet present).
+  prices.assertConsistent();
+
+  // ── Step 7: Payment (skipped — booking_payment attribute not yet implemented) ──
+  await test.step('payment handoff', async () => {
+    test.skip(true, 'booking_payment attribute not yet implemented — see CRUISEAPPY_ATTRIBUTES.md');
+  });
+
+  // ── Step 8: Confirmation (skipped — booking_reference attribute not yet implemented) ──
+  await test.step('booking confirmation shows reference number', async () => {
+    test.skip(true, 'booking_reference attribute not yet implemented — see CRUISEAPPY_ATTRIBUTES.md');
   });
 });
 

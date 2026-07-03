@@ -1,10 +1,9 @@
 import { Page } from '@playwright/test';
+import { BookingLocators } from '../locators/booking';
+import { resolve } from '../helpers/locatorResolver';
 
 export class StateroomsPage {
-  // data-cruiseappy="booking_staterooms" is the stable plugin attribute for the Continue CTA.
-  // Note: the Latvia theme sets data-href (not href) on this element — continue() handles both.
-  private readonly continueLink = this.page
-    .locator('[data-cruiseappy="booking_staterooms"]')
+  private readonly continueLink = resolve(this.page, BookingLocators.stateroomsContinue)
     .or(this.page.getByRole('link', { name: /continue/i }))
     .first();
   private readonly selectButtons = this.page.getByRole('button', { name: 'Select' });
@@ -24,10 +23,6 @@ export class StateroomsPage {
   }
 
   async continue() {
-    // The booking_staterooms link starts with only data-href; the page JS sets href
-    // after its AJAX response + 100ms setTimeout auto-selects a stateroom grade.
-    // Navigating before that fires means we get the bare base URL (no resultno/gradeno),
-    // and the server rejects the booking. Wait up to 30s for href to appear.
     await this.page.waitForFunction(() => {
       const el = document.querySelector('[data-cruiseappy="booking_staterooms"]');
       return !!(el as HTMLAnchorElement)?.href;
@@ -43,7 +38,8 @@ export class StateroomsPage {
       await this.continueLink.click({ noWaitAfter: true });
     }
     // booking_deck_room = cabins step; booking_passengers = "Sail Away" skips cabins.
-    await this.page.locator('[data-cruiseappy="booking_deck_room"], [data-cruiseappy="booking_passengers"]')
+    await this.page
+      .locator(`${BookingLocators.cabinsSubmit}, ${BookingLocators.passengersSubmit}`)
       .or(this.page.locator('input[type="text"], input[type="email"]').first())
       .first()
       .waitFor({ state: 'visible', timeout: 90_000 });

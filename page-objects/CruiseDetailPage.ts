@@ -1,13 +1,13 @@
 import { Page } from '@playwright/test';
+import { BookingLocators, BookingFallbacks } from '../locators/booking';
+import { resolve } from '../helpers/locatorResolver';
 
 export class CruiseDetailPage {
-  // data-cruiseappy="book_cruise" is the stable plugin attribute for the Book Now CTA.
-  // Fall back to href*=occupancy for older themes (visioncruise, century-cypress).
-  // .first() suppresses strict-mode if multiple stateroom-specific links also match.
-  private readonly bookNowLink = this.page
-    .locator('[data-cruiseappy="book_cruise"]')
-    .or(this.page.locator('main a[href*="occupancy"]'))
-    .first();
+  private readonly bookNowLink = resolve(
+    this.page,
+    BookingLocators.bookCruise,
+    BookingFallbacks.bookCruise,
+  ).first();
   private readonly cruiseName = this.page.getByRole('heading', { level: 1 }).first();
 
   constructor(private readonly page: Page) {}
@@ -37,7 +37,7 @@ export class CruiseDetailPage {
     } else {
       await this.bookNowLink.click({ noWaitAfter: true });
     }
-    await this.page.locator('[data-cruiseappy="booking_occupancy"]')
+    await resolve(this.page, BookingLocators.occupancyContinue)
       .or(this.page.getByRole('link', { name: /continue/i }))
       .first()
       .waitFor({ state: 'visible', timeout: 90_000 });

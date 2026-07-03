@@ -1,21 +1,18 @@
 import { Page } from '@playwright/test';
 import { futureDateISO } from '../helpers/testData';
+import { SearchLocators, SearchFallbacks } from '../locators/search';
+import { resolve } from '../helpers/locatorResolver';
 
 export class SearchPage {
-  // data-cruiseappy="view_cruise" is set on AJAX-rendered result card links (Latvia theme and newer).
-  // Fall back to role+text for older sites (visioncruise, century-cypress) where the attribute is absent.
-  private readonly resultLinks = this.page
-    .locator('[data-cruiseappy="view_cruise"]')
+  private readonly resultLinks = resolve(this.page, SearchLocators.viewCruise)
     .or(this.page.getByRole('link', { name: /^(view|more) details$/i }));
 
   constructor(private readonly page: Page) {}
 
   async goto() {
     // Discover the search URL from the homepage rather than hardcoding a path.
-    // data-cruiseappy="search" is present on every site's search CTA regardless
-    // of language or URL structure (e.g. /search/ vs /lv/meklesana/).
     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
-    const searchAnchor = this.page.locator('[data-cruiseappy="search"]').first();
+    const searchAnchor = this.page.locator(SearchLocators.searchCta).first();
     const searchHref = await searchAnchor.getAttribute('href').catch(() => null)
       ?? '/search/';
 
@@ -31,26 +28,16 @@ export class SearchPage {
 
   async waitForResults() {
     // 180s — the search page is AJAX-rendered on a WordPress stack that can spike
-    // well past 120s under server load. Raise to 180s to survive those spikes.
+    // well past 120s under server load.
     await this.resultLinks.first().waitFor({ state: 'visible', timeout: 180_000 });
-    // Some themes show a loading overlay after results render that blocks clicks.
-    // data-cruiseappy="search_results_loading" is the stable hook; fall back to
-    // the CSS-class selector for sites not yet updated.
-    await this.page
-      .locator('[data-cruiseappy="search_results_loading"], #search-loading-overlay.is-visible')
+    await resolve(this.page, SearchLocators.searchResultsLoading, SearchFallbacks.searchResultsLoading)
       .waitFor({ state: 'hidden', timeout: 15_000 })
       .catch(() => {});
     return this;
   }
 
   async selectFirstResult() {
-    // Prefer a result card that has both result_bookable (cruise is bookable) and at least
-    // one result_price (has a real price, not call-for-price). Both must be present —
-    // a priced but non-bookable cruise still won't show a Book Now CTA on the detail page.
-    // Falls back to the first result on older sites without these attributes.
-    const bookable = this.page.locator(
-      ':has([data-cruiseappy="result_bookable"]):has([data-cruiseappy="result_price"]) [data-cruiseappy="view_cruise"]',
-    );
+    const bookable = this.page.locator(SearchLocators.bookableWithPrice);
     const target = (await bookable.count() > 0) ? bookable : this.resultLinks;
 
     const href = await target.first().getAttribute('href').catch(() => null);
