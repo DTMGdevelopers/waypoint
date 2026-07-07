@@ -28,13 +28,18 @@ export class StateroomsPage {
       return !!(el as HTMLAnchorElement)?.href;
     }, { timeout: 30_000 }).catch(() => null);
 
+    // Re-wait for visibility — on CLL the stateroom grid re-renders via AJAX
+    // during the href wait, which can temporarily hide the continue element.
+    await this.continueLink.waitFor({ state: 'visible', timeout: 30_000 });
+
     // Try href first (JS-populated with grade params), then data-href (older sites).
     const href = await this.continueLink.getAttribute('href')
       ?? await this.continueLink.getAttribute('data-href');
     if (href) {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
-      await this.continueLink.scrollIntoViewIfNeeded();
+      // Non-anchor themes (e.g. CLL uses a <span> with a click handler).
+      // click() handles scroll-into-view automatically.
       await this.continueLink.click({ noWaitAfter: true });
     }
     // booking_deck_room = cabins step; booking_passengers = "Sail Away" skips cabins.

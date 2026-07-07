@@ -22,7 +22,8 @@ export class CabinsPage {
       .waitFor({ state: 'visible', timeout: 30_000 }).catch(() => null);
 
     const selectCabin = this.page.locator(BookingFallbacks.cabinSelectSpan).first();
-    const selectBtn   = this.page.getByRole('button', { name: /^select$/i }).first();
+    // Button text varies by theme language — English "Select", Latvian "Izvēlies", etc.
+    const selectBtn   = this.page.getByRole('button', { name: /^(select|izvēlies)$/i }).first();
 
     if (await selectCabin.count() > 0) {
       await selectCabin.click({ noWaitAfter: true });
@@ -30,7 +31,7 @@ export class CabinsPage {
       await selectBtn.click({ noWaitAfter: true });
     }
     // booking_deck_room form submit: server assigns cabin from the grade
-    await this.continueBtn.scrollIntoViewIfNeeded();
+    // click() handles scroll-into-view automatically.
     await this.continueBtn.click({ noWaitAfter: true });
     await resolve(this.page, BookingLocators.passengersSubmit, BookingFallbacks.passengersForm)
       .first()

@@ -77,16 +77,46 @@ export class PassengerFormPage {
   async getErrorMessages(): Promise<string[]> {
     const errors = await this.page
       .locator(
+        // Bootstrap / standard patterns
         '.invalid-feedback:visible, .help-block:visible, ' +
-        '[class*="error-message"]:visible, [role="alert"]:visible, ' +
-        '.wpcf7-not-valid-tip:visible',
+        '.text-danger:visible, .alert-danger:visible, ' +
+        // Generic class-name patterns
+        '[class*="error-message"]:visible, [class*="error_message"]:visible, ' +
+        '[class*="validation-error"]:visible, ' +
+        // ARIA / role patterns
+        '[role="alert"]:visible, ' +
+        // WordPress / CF7 patterns
+        '.wpcf7-not-valid-tip:visible, .wpcf7-response-output:visible, ' +
+        // Fields marked invalid
+        'input.is-invalid ~ *, select.is-invalid ~ *',
       )
       .allTextContents();
     return errors.map((t) => t.trim()).filter(Boolean);
   }
 
   async assertHasErrors(): Promise<void> {
-    const errors = await this.getErrorMessages();
-    expect(errors.length, 'Expected validation errors to be present after invalid submission').toBeGreaterThan(0);
+    const domErrors = await this.getErrorMessages();
+    if (domErrors.length > 0) return;
+
+    // Fallback for forms that use HTML5 native browser validation (e.g. CLL).
+    // Native bubbles are not DOM-accessible, but the :invalid CSS state is.
+    const invalidCount = await this.page
+      .locator('input:invalid, select:invalid, textarea:invalid')
+      .count();
+
+    expect(
+      domErrors.length + invalidCount,
+      'Expected validation errors (DOM messages or HTML5 :invalid fields) after invalid submission',
+    ).toBeGreaterThan(0);
+  }
+
+  /**
+   * Returns the count of form fields currently in an :invalid HTML5 state.
+   * Useful when the form uses native browser validation rather than DOM error messages.
+   */
+  async getInvalidFieldCount(): Promise<number> {
+    return this.page
+      .locator('input:invalid, select:invalid, textarea:invalid')
+      .count();
   }
 }
