@@ -52,5 +52,5 @@ export const BookingFallbacks = {
   occupancyInfants:  '#field_enquiry_infants, input[name="infants"]',
   cabinsContainer:   '#cabin-selection .row',
   cabinSelectSpan:   '.select-cabin',
-  passengersForm:    'input[type="text"], input[type="email"]',
+  passengersForm:    'button[type="submit"], input[type="submit"]',
 } as const;
