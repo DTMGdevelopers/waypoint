@@ -30,7 +30,8 @@ export class StateroomsPage {
 
     // Re-wait for visibility — on CLL the stateroom grid re-renders via AJAX
     // during the href wait, which can temporarily hide the continue element.
-    await this.continueLink.waitFor({ state: 'visible', timeout: 30_000 });
+    // Note: getAttribute() works regardless of visibility, so we don't need to
+    // wait here — visibility is only required if we fall through to click().
 
     // Try href first (JS-populated with grade params), then data-href (older sites).
     const href = await this.continueLink.getAttribute('href')
@@ -39,6 +40,8 @@ export class StateroomsPage {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
       // Non-anchor themes (e.g. CLL uses a <span> with a click handler).
+      // Only wait for visibility here — clicking requires the element to be interactable.
+      await this.continueLink.waitFor({ state: 'visible', timeout: 30_000 });
       // click() handles scroll-into-view automatically.
       await this.continueLink.click({ noWaitAfter: true });
     }
