@@ -6,7 +6,6 @@ export class StateroomsPage {
   private readonly continueLink = resolve(this.page, BookingLocators.stateroomsContinue)
     .or(this.page.getByRole('link', { name: /continue/i }))
     .first();
-  private readonly selectButtons = this.page.getByRole('button', { name: 'Select' });
 
   constructor(private readonly page: Page) {}
 
@@ -18,32 +17,22 @@ export class StateroomsPage {
     return this;
   }
 
-  async getCabinCount(): Promise<number> {
-    return this.selectButtons.count();
-  }
-
   async continue() {
+    // Wait for the booking_staterooms href to be JS-populated after grade auto-selection.
     await this.page.waitForFunction(() => {
       const el = document.querySelector('[data-cruiseappy="booking_staterooms"]');
       return !!(el as HTMLAnchorElement)?.href;
     }, { timeout: 30_000 }).catch(() => null);
 
-    // Re-wait for visibility — on CLL the stateroom grid re-renders via AJAX
-    // during the href wait, which can temporarily hide the continue element.
-    // Note: getAttribute() works regardless of visibility, so we don't need to
-    // wait here — visibility is only required if we fall through to click().
-
-    // Try href first (JS-populated with grade params), then data-href (older sites).
+    // getAttribute() works regardless of visibility — no need to wait for visible here.
     const href = await this.continueLink.getAttribute('href')
       ?? await this.continueLink.getAttribute('data-href');
     if (href) {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
-      // Non-anchor themes (e.g. CLL uses a <span> with a click handler).
-      // Only wait for visibility here — clicking requires the element to be interactable.
+      // Non-anchor themes use a click handler — wait for visibility before clicking.
       await this.continueLink.waitFor({ state: 'visible', timeout: 30_000 });
-      // click() handles scroll-into-view automatically.
-      await this.continueLink.click({ noWaitAfter: true });
+      await this.continueLink.click();
     }
     // booking_deck_room = cabins step; booking_passengers = "Sail Away" skips cabins.
     await this.page

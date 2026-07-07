@@ -44,7 +44,7 @@ export class SearchPage {
     if (href) {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
-      await target.first().click({ noWaitAfter: true });
+      await target.first().click();
       await this.page.waitForLoadState('domcontentloaded');
     }
     return this;

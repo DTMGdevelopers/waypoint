@@ -52,8 +52,7 @@ export class OccupancyPage {
     if (href) {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
-      await this.continueLink.scrollIntoViewIfNeeded();
-      await this.continueLink.click({ noWaitAfter: true });
+      await this.continueLink.click();
     }
     await resolve(this.page, BookingLocators.stateroomsContinue)
       .or(this.page.getByRole('link', { name: /continue/i }))

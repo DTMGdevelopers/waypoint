@@ -153,7 +153,7 @@ test.describe('Cruise detail page', () => {
     await searchPage.selectFirstResult();
     const cruiseDetail = new CruiseDetailPage(page);
     await cruiseDetail.waitForLoad();
-    await expect(cruiseDetail.getBookNowCta(isMobile)).toBeVisible();
+    await expect(cruiseDetail.getBookNowCta()).toBeVisible();
   });
 });
 

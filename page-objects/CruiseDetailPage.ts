@@ -22,8 +22,7 @@ export class CruiseDetailPage {
     return (await this.cruiseName.textContent()) ?? '';
   }
 
-  // isMobile param kept for backward compatibility with tests that pass it.
-  getBookNowCta(_isMobile?: boolean) {
+  getBookNowCta() {
     return this.bookNowLink;
   }
 
@@ -35,7 +34,7 @@ export class CruiseDetailPage {
     if (href) {
       await this.page.goto(href, { waitUntil: 'domcontentloaded' });
     } else {
-      await this.bookNowLink.click({ noWaitAfter: true });
+      await this.bookNowLink.click();
     }
     await resolve(this.page, BookingLocators.occupancyContinue)
       .or(this.page.getByRole('link', { name: /continue/i }))
