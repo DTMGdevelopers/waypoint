@@ -3,6 +3,8 @@ name: Regression suite
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   schedule:
     # Nightly at 02:00 UTC against the default BASE_URL variable
     - cron: '0 2 * * *'
@@ -46,8 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: DTMGdevelopers/waypoint
 
       - uses: actions/setup-node@v4
         with:
@@ -82,8 +82,6 @@ jobs:
         shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: DTMGdevelopers/waypoint
 
       - uses: actions/setup-node@v4
         with:
@@ -115,8 +113,6 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: DTMGdevelopers/waypoint
 
       - uses: actions/setup-node@v4
         with:

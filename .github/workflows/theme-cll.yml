@@ -29,8 +29,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: DTMGdevelopers/waypoint
 
       - uses: actions/setup-node@v4
         with:
@@ -64,8 +62,6 @@ jobs:
         shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: DTMGdevelopers/waypoint
 
       - uses: actions/setup-node@v4
         with:
@@ -96,8 +92,6 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: DTMGdevelopers/waypoint
 
       - uses: actions/setup-node@v4
         with:

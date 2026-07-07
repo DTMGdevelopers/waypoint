@@ -1,11 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
+import { loadTheme } from './config/themes';
 
 dotenv.config();
 
 // Treat only the exact string 'true' as CI — prevents CI=false in .env being
 // read as truthy (all non-empty strings are truthy in JS).
 const isCI = process.env.CI === 'true';
+const theme = loadTheme();
 
 /**
  * Waypoint — Playwright Regression Suite
@@ -28,7 +30,7 @@ export default defineConfig({
   ],
 
   use: {
-    baseURL: process.env.BASE_URL ?? 'https://staging.yoursite.com',
+    baseURL: theme.baseUrl,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
