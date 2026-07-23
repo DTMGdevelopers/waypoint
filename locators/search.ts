@@ -20,6 +20,24 @@ export const SearchLocators = {
   /** The dropdown panel that opens beneath a search-form-item trigger */
   searchDropdownPanel: '.search-form-dropdown',
 
+  // ── Dropdown internals ───────────────────────────────────────────────────
+  /** Text filter input inside an open dropdown panel */
+  dropdownSearchInput: 'input.search',
+
+  // ── Calendar ─────────────────────────────────────────────────────────────
+  /** Month-picker panel rendered when the dates trigger is clicked */
+  calendarPanel:     '.calendar-monthpicker',
+  /** Year-group heading rows inside the calendar */
+  calendarYearGroup: '.year-group',
+
+  // ── Visible checkbox option labels (AJAX-filtered items excluded) ─────────
+  /** Destination / region options that are currently available (not hidden by filter AJAX) */
+  destinationOption: 'label:has(input[name="region"]):not(.d-none)',
+  /** Cruise line options that are currently available */
+  cruiseLineOption:  'label:has(input[name="cruiseline"]):not(.d-none)',
+  /** Departure port options that are currently available */
+  portOption:        'label:has(input[name="departport"]):not(.d-none)',
+
   // ── Result cards ─────────────────────────────────────────────────────────
   /** "View details" link on each AJAX-rendered result card */
   viewCruise: '[data-cruiseappy="view_cruise"]',
@@ -38,6 +56,11 @@ export const SearchLocators = {
   bookableWithPrice:
     ':has([data-cruiseappy="result_bookable"]):has([data-cruiseappy="result_price"]) [data-cruiseappy="view_cruise"]',
 } as const;
+
+/** Returns the CSS selector for the month label identified by its ISO date (e.g. '2027-01-01'). */
+export function calendarMonthLabel(isoDate: string): string {
+  return `label[for="sf_date_${isoDate}"]`;
+}
 
 /**
  * CSS fallbacks for search / results elements not yet annotated with

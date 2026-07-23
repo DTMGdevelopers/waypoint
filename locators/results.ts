@@ -50,7 +50,34 @@ export const ResultsLocators = {
   filterItemCount:    '.search-filter label.checkbox .total',
   /** A checked/active filter item */
   filterItemChecked:  '.search-filter label.checkbox.checked',
+
+  // ── Filter section internals (relative — use with .locator() on a section) ─
+  /** Checkbox label within a filter section */
+  filterLabel:     'label.checkbox',
+  /** "Show more" expand link inside a filter section */
+  filterShowMore:  '*:has-text("Show more")',
+  /** Name span inside a filter label */
+  filterLabelName: '.name',
+  /** Count span inside a filter label */
+  filterLabelTotal: '.total',
+
+  // ── Card internal selectors (relative — use with .locator() on a .search-item) ─
+  /** H3 title heading */
+  cardTitleHeading: 'h3',
+  /** Anchor link inside the H3 title */
+  cardTitleLink:    'h3 a',
+  /** "Sailing from" port paragraph */
+  cardSailingFrom:  'p:has-text("Sailing from")',
+  /** Cruise line logo image */
+  cardCruiselineLogoImg: '.cruiseline-image img',
+  /** Hero background image container */
+  cardHeroImage:    '.search-item-image',
 } as const;
+
+/** Returns the CSS selector for a specific filter section (e.g. filterSectionFor('regions')). */
+export function filterSectionFor(dataFilter: string): string {
+  return `[data-filter="${dataFilter}"]`;
+}
 
 /**
  * CSS fallbacks for results-page elements not yet annotated with data-cruiseappy.
