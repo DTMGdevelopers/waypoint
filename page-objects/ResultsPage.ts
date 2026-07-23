@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { SearchLocators, SearchFallbacks } from '../locators/search';
-import { ResultsFallbacks } from '../locators/results';
+import { ResultsLocators, ResultsFallbacks } from '../locators/results';
 import { resolve } from '../helpers/locatorResolver';
 
 export class ResultsPage {
@@ -86,6 +86,56 @@ export class ResultsPage {
     const paginator = this.page.locator(ResultsFallbacks.pagination);
     await paginator.getByText(String(n), { exact: true }).first().click();
     await this.waitForLoad();
+    return this;
+  }
+
+  /** Returns the full "X cruises found" string from the results heading. */
+  async getCruisesFoundText(): Promise<string> {
+    const el = this.page.locator(ResultsLocators.totalResults).first();
+    await el.waitFor({ state: 'visible', timeout: 15_000 });
+    return (await el.innerText()).trim();
+  }
+
+  /** Parses and returns the numeric cruise count from "X cruises found". */
+  async getCruisesFoundCount(): Promise<number> {
+    const text = await this.getCruisesFoundText();
+    const match = text.match(/([\d,]+)\s+cruises/i);
+    return match ? parseInt(match[1]!.replace(/,/g, ''), 10) : 0;
+  }
+
+  /** Returns all product card container elements (.search-item). */
+  async getCardContainers() {
+    return this.page.locator(ResultsLocators.productCard).all();
+  }
+
+  /** Returns true if the "Load more" / infinite-scroll button is visible. */
+  async isLoadMoreVisible(): Promise<boolean> {
+    return this.page.locator(ResultsLocators.loadMoreButton).isVisible().catch(() => false);
+  }
+
+  /**
+   * Clicks "Load more" and waits for at least one additional card to appear.
+   * Resolves once the card at index `countBefore` becomes visible.
+   */
+  async clickLoadMore() {
+    const countBefore = await this.page.locator(ResultsLocators.productCard).count();
+    await this.page.locator(ResultsLocators.loadMoreButton).click();
+    await this.page.locator(ResultsLocators.productCard)
+      .nth(countBefore)
+      .waitFor({ state: 'visible', timeout: 30_000 });
+    return this;
+  }
+
+  /**
+   * Clicks a filter item in the left-hand filter panel and waits for results to refresh.
+   * @param dataFilter  The section's data-filter value (e.g. 'regions', 'cruiselines', 'durations')
+   * @param labelText   Visible text of the option to click (e.g. 'Mediterranean', 'MSC Cruises')
+   */
+  async clickFilterItem(dataFilter: string, labelText: string) {
+    const section = this.page.locator(`[data-filter="${dataFilter}"]`);
+    await section.getByText(labelText, { exact: true }).first().click();
+    // Brief grace period for the AJAX filter response
+    await this.page.waitForLoadState('domcontentloaded').catch(() => {});
     return this;
   }
 }

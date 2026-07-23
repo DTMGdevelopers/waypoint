@@ -9,6 +9,47 @@ export const ResultsLocators = {
   resultBookable: '[data-cruiseappy="result_bookable"]',
   resultPrice:    '[data-cruiseappy="result_price"]',
   loadingOverlay: '[data-cruiseappy="search_results_loading"]',
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  /** Primary sort <select> (name="sort") rendered by the automation theme */
+  sortSelect:     'select[name="sort"]',
+
+  // ── Results count ─────────────────────────────────────────────────────────
+  /** "X cruises found" paragraph */
+  totalResults:   '.total-results',
+
+  // ── Product cards ─────────────────────────────────────────────────────────
+  /** Outermost card container — one per result */
+  productCard:         '.search-item',
+  /** H3 cruise title inside a card */
+  cardTitle:           '.search-item h3',
+  /** "X nights | date | ship" subtitle */
+  cardSubtitle:        '.search-item-subtitle',
+  /** Cruise type badge container ("Cruise Only", "Fly Cruise", etc.) */
+  cardCruiseType:      '.fly-cruise-indicator',
+  /** Itinerary port-list container */
+  cardItinerary:       '.search-item-itinerary',
+  /** "View full itinerary" expand trigger */
+  cardViewItinerary:   '.excerpt-show-more',
+  /** Cabin-grade price grid */
+  cardPrices:          '.search-item-prices',
+  /** Cruise line logo link / image container */
+  cardCruiselineLogo:  '.cruiseline-image',
+
+  // ── Load more ─────────────────────────────────────────────────────────────
+  loadMoreButton:  'button.search-more',
+
+  // ── Left-panel filters ────────────────────────────────────────────────────
+  /** Any filter section (scoped by data-filter attribute) */
+  filterSection:      '[data-filter]',
+  /** Clickable checkbox label inside a filter section */
+  filterItem:         '.search-filter label.checkbox',
+  /** Name span inside a filter item */
+  filterItemName:     '.search-filter label.checkbox .name',
+  /** Count/total span inside a filter item */
+  filterItemCount:    '.search-filter label.checkbox .total',
+  /** A checked/active filter item */
+  filterItemChecked:  '.search-filter label.checkbox.checked',
 } as const;
 
 /**

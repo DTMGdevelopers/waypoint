@@ -24,14 +24,18 @@ export class SearchPage {
    * @param value  The exact checkbox value to select (must match the API-provided value)
    */
   private async openDropdownAndSelect(trigger: Locator, inputName: string, value: string): Promise<void> {
-    const isOpen = await trigger.locator(SearchLocators.searchDropdownPanel).isVisible().catch(() => false);
-    if (!isOpen) {
-      await trigger.click();
-    }
     const option = this.page
       .locator(`label:has(input[name="${inputName}"][value="${value}"])`)
       .first();
-    await option.waitFor({ state: 'visible', timeout: 5_000 });
+    // Check whether the target option is already visible (dropdown may already be open).
+    // We test the option directly rather than the panel — the panel can have a non-zero
+    // bounding box even when closed (border/padding), causing isVisible() to return true
+    // when the items are still hidden inside an animating inner container.
+    const isOptionVisible = await option.isVisible().catch(() => false);
+    if (!isOptionVisible) {
+      await trigger.click();
+      await option.waitFor({ state: 'visible', timeout: 10_000 });
+    }
     await option.click();
   }
 
@@ -125,5 +129,44 @@ export class SearchPage {
 
   async getResultCount(): Promise<number> {
     return this.resultLinks.count();
+  }
+
+  /** Navigate to the homepage where the search form is visible. */
+  async gotoHome(): Promise<this> {
+    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+    return this;
+  }
+
+  /** Returns the visible text of the search CTA (e.g. "Search" or "10,272 cruises"). */
+  async getSearchButtonText(): Promise<string> {
+    return (await resolve(this.page, SearchLocators.searchCta).first().innerText()).trim();
+  }
+
+  /** Returns the href attribute of the search CTA. */
+  async getSearchButtonHref(): Promise<string | null> {
+    return resolve(this.page, SearchLocators.searchCta).first().getAttribute('href');
+  }
+
+  /**
+   * Opens the Departure Date calendar and clicks a month label by its ISO start date.
+   * Past months are rendered as disabled labels without a checkbox — this method only
+   * targets future (enabled) months.
+   *
+   * @param isoDate  First day of the target month, e.g. '2027-01-01'
+   */
+  async selectMonth(isoDate: string): Promise<this> {
+    const trigger = resolve(this.page, SearchLocators.searchDates, SearchFallbacks.searchDates);
+    const monthLabel = this.page.locator(`label[for="sf_date_${isoDate}"]`);
+    // Check whether the target month is already visible (calendar may already be open).
+    // Checking the month label directly is more reliable than checking the calendar panel
+    // because the panel's bounding box may be non-zero even when its content is still
+    // hidden inside an animating container.
+    const isMonthVisible = await monthLabel.isVisible().catch(() => false);
+    if (!isMonthVisible) {
+      await trigger.click();
+      await monthLabel.waitFor({ state: 'visible', timeout: 10_000 });
+    }
+    await monthLabel.click();
+    return this;
   }
 }

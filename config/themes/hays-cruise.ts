@@ -2,7 +2,7 @@ import { ThemeConfig } from './types';
 
 export const haysCruise: ThemeConfig = {
   name: 'hays-cruise',
-  baseUrl: 'https://hayscruise.co.uk',
+  baseUrl: 'https://booking.hayscruise.co.uk/',
   locatorOverrides: {
     // "Departure Date + Duration" is a single combined control on this theme.
     // Both selectDates() and selectDuration() target the same trigger element.
