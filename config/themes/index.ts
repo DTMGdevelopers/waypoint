@@ -2,8 +2,10 @@ import { ThemeConfig } from './types';
 import { visioncruise } from './visioncruise';
 import { cll } from './cll';
 import { centuryCyprus } from './century-cyprus';
+import { automation } from './automation';
 
 const themes: Record<string, ThemeConfig> = {
+  automation,
   visioncruise,
   cll,
   'century-cyprus': centuryCyprus,
@@ -19,7 +21,7 @@ const themes: Record<string, ThemeConfig> = {
  * @throws if the resolved theme name is not registered.
  */
 export function loadTheme(name?: string): ThemeConfig {
-  const key = name ?? process.env.THEME ?? 'visioncruise';
+  const key = name ?? process.env.THEME ?? 'automation';
   const theme = themes[key];
   if (!theme) {
     const available = Object.keys(themes).join(', ');
