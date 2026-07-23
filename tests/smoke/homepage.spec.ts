@@ -181,23 +181,19 @@ test.describe('Homepage', () => {
     const failures: string[] = [];
 
     await test.step('listen for failed requests while the page loads', async () => {
-      page.on('requestfailed', (req) => failures.push(`${req.method()} ${req.url()}`));
+      page.on('requestfailed', (req) => {
+        const type = req.resourceType();
+        if (type === 'script' || type === 'stylesheet') {
+          failures.push(`${req.method()} ${req.url()}`);
+        }
+      });
       await page.reload({ waitUntil: 'domcontentloaded' });
     });
 
-    await test.step('confirm no first-party requests failed', async () => {
-      const siteHostname = new URL(page.url()).hostname;
-      const critical = failures.filter((entry) => {
-        try {
-          const rawUrl = entry.replace(/^[A-Z]+ /, '');
-          return new URL(rawUrl).hostname === siteHostname;
-        } catch {
-          return false;
-        }
-      });
+    await test.step('confirm no render-blocking requests failed', async () => {
       expect(
-        critical,
-        `These first-party requests failed and may break the page: ${critical.join(', ')}`,
+        failures,
+        `These render-blocking requests failed and will break the page: ${failures.join(', ')}`,
       ).toHaveLength(0);
     });
   });
