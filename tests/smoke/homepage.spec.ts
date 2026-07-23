@@ -201,6 +201,7 @@ test.describe('Homepage', () => {
           !url.includes('feefo.com') &&
           !url.includes('google.com/rmkt') &&
           !url.includes('google.com/pagead') &&
+          !url.includes('google.co.uk/ads') &&
           !url.startsWith('GET blob:') &&
           !(url.startsWith('POST ') && url.includes('/api/')),
       );
