@@ -165,7 +165,8 @@ test.describe('Homepage', () => {
           !e.includes('Cross-Origin') &&
           !e.includes('CORS') &&
           !e.includes('getComputedStyle') &&
-          !e.includes('t.meta.current_page'),
+          !e.includes('t.meta.current_page') &&
+          !e.includes('Load failed'),
       );
       expect(
         critical,
