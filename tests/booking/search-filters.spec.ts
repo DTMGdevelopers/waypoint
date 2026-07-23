@@ -230,8 +230,8 @@ test.describe('Search results — left-panel filters', () => {
     const results = new ResultsPage(page);
     const countBefore = await results.getCruisesFoundCount();
 
-    // Apply the "Mediterranean" destination filter from the results sidebar
-    await results.clickFilterItem('regions', 'Mediterranean');
+    // Pick the first available destination filter item dynamically — avoids hardcoded inventory names
+    await results.clickFirstFilterItem('regions');
     // Wait for the AJAX refresh
     await page.waitForLoadState('domcontentloaded').catch(() => {});
     await page.locator('.total-results').waitFor({ state: 'visible', timeout: 60_000 });

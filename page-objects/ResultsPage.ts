@@ -138,4 +138,19 @@ export class ResultsPage {
     await this.page.waitForLoadState('domcontentloaded').catch(() => {});
     return this;
   }
+
+  /**
+   * Clicks the first available filter item in the given filter section dynamically.
+   * Returns the visible label text of the option that was clicked.
+   * Prefer this over clickFilterItem() to avoid hardcoding inventory-specific names.
+   */
+  async clickFirstFilterItem(dataFilter: string): Promise<string> {
+    const section = this.page.locator(`[data-filter="${dataFilter}"]`);
+    const firstLabel = section.locator('label.checkbox').first();
+    await firstLabel.waitFor({ state: 'visible', timeout: 10_000 });
+    const labelText = (await firstLabel.locator('.name').innerText()).trim();
+    await firstLabel.click();
+    await this.page.waitForLoadState('domcontentloaded').catch(() => {});
+    return labelText;
+  }
 }

@@ -39,6 +39,38 @@ export class SearchPage {
     await option.click();
   }
 
+  /**
+   * Opens a custom dropdown and selects the Nth visible checkbox option, returning its value.
+   * Used for data-driven tests that avoid hardcoding inventory-specific values.
+   *
+   * @param trigger   The .search-form-item div that opens the dropdown on click
+   * @param inputName The checkbox name attribute (e.g. 'region', 'cruiseline')
+   * @param index     0-based index of the option to select (default: 0 = first)
+   */
+  private async openDropdownAndSelectNth(trigger: Locator, inputName: string, index = 0): Promise<string> {
+    // Exclude items hidden by the AJAX cross-filter (Bootstrap d-none class) so we always
+    // resolve to an option that is actually available when the dropdown opens.
+    const options = this.page.locator(`label:has(input[name="${inputName}"]):not(.d-none)`);
+    const isFirstVisible = await options.first().isVisible().catch(() => false);
+    if (!isFirstVisible) {
+      await trigger.click();
+      // If another dropdown was active, the first click may only close it without
+      // opening this one. Wait briefly and click again if options are still hidden.
+      const nowVisible = await options.first()
+        .waitFor({ state: 'visible', timeout: 1_000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!nowVisible) {
+        await trigger.click();
+      }
+      await options.first().waitFor({ state: 'visible', timeout: 10_000 });
+    }
+    const option = options.nth(index);
+    const value = (await option.locator(`input[name="${inputName}"]`).getAttribute('value')) ?? '';
+    await option.click();
+    return value;
+  }
+
   async goto() {
     // Discover the search URL from the homepage rather than hardcoding a path.
     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -118,6 +150,39 @@ export class SearchPage {
       value,
     );
     return this;
+  }
+
+  /** Opens the Destination dropdown and selects the first available option. Returns the selected value. */
+  async selectFirstDestination(): Promise<string> {
+    return this.openDropdownAndSelectNth(
+      resolve(this.page, SearchLocators.searchDestination, SearchFallbacks.searchDestination),
+      'region',
+    );
+  }
+
+  /** Opens the Destination dropdown and selects the second available option. Returns the selected value. */
+  async selectSecondDestination(): Promise<string> {
+    return this.openDropdownAndSelectNth(
+      resolve(this.page, SearchLocators.searchDestination, SearchFallbacks.searchDestination),
+      'region',
+      1,
+    );
+  }
+
+  /** Opens the Cruise Line dropdown and selects the first available option. Returns the selected value. */
+  async selectFirstCruiseLine(): Promise<string> {
+    return this.openDropdownAndSelectNth(
+      resolve(this.page, SearchLocators.searchCruiseLine, SearchFallbacks.searchCruiseLine),
+      'cruiseline',
+    );
+  }
+
+  /** Opens the Departure Port dropdown and selects the first available option. Returns the selected value. */
+  async selectFirstPort(): Promise<string> {
+    return this.openDropdownAndSelectNth(
+      resolve(this.page, SearchLocators.searchPort, SearchFallbacks.searchPort),
+      'departport',
+    );
   }
 
   /** Click the Search CTA to submit the form and wait for the results page to load. */

@@ -50,14 +50,12 @@ test.describe('Search box — Destination dropdown', () => {
     ).toBeVisible();
   });
 
-  test('shows popular destination options in the dropdown list', async ({ page }) => {
+  test('shows at least 5 destination options in the dropdown list', async ({ page }) => {
     await page.locator('[data-cruiseappy="search_destination"]').click();
-    // Use the checkbox label selector — same pattern as openDropdownAndSelect, reliably visible once open
-    await expect(page.locator('label:has(input[name="region"][value="Mediterranean"])')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('label:has(input[name="region"][value="Caribbean"])')).toBeVisible();
-    await expect(page.locator('label:has(input[name="region"][value="Alaska"])')).toBeVisible();
-    await expect(page.locator('label:has(input[name="region"][value="Baltic"])')).toBeVisible();
-    await expect(page.locator('label:has(input[name="region"][value="Canaries"])')).toBeVisible();
+    const options = page.locator('label:has(input[name="region"]):not(.d-none)');
+    await options.first().waitFor({ state: 'visible', timeout: 10_000 });
+    const count = await options.count();
+    expect(count, 'Expected at least 5 destination options').toBeGreaterThanOrEqual(5);
   });
 
   test('contains a search text input inside the dropdown', async ({ page }) => {
@@ -69,34 +67,31 @@ test.describe('Search box — Destination dropdown', () => {
 
   test('selecting a destination updates the trigger label', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectDestination('Mediterranean');
-    await expect(
-      page.locator('[data-cruiseappy="search_destination"]'),
-    ).toContainText('Mediterranean');
+    const selected = await sp.selectFirstDestination();
+    await expect(page.locator('[data-cruiseappy="search_destination"]')).toContainText(selected);
   });
 
   test('selecting a destination updates the search button to show a cruise count', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectDestination('Mediterranean');
-    const searchBtn = page.locator('[data-cruiseappy="search"]');
-    await expect(searchBtn).toHaveText(/[\d,]+ cruises/i);
+    await sp.selectFirstDestination();
+    await expect(page.locator('[data-cruiseappy="search"]')).toHaveText(/[\d,]+ cruises/i);
   });
 
   test('search button href contains the region parameter after destination selection', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectDestination('Caribbean');
-    // Wait for AJAX to update the button href before reading it
-    await expect(page.locator('[data-cruiseappy="search"]')).toHaveAttribute('href', /region=Caribbean/i, { timeout: 10_000 });
+    await sp.selectFirstDestination();
+    // Wait for AJAX to update the button href — check that any region param is set
+    await expect(page.locator('[data-cruiseappy="search"]')).toHaveAttribute('href', /[?&]region=/, { timeout: 10_000 });
   });
 
   test('selecting a second destination increases the cruise count', async ({ page }) => {
     const sp = new SearchPage(page);
     const btn = page.locator('[data-cruiseappy="search"]');
-    await sp.selectDestination('Mediterranean');
+    await sp.selectFirstDestination();
     // Wait for AJAX to update the count before reading it
     await expect(btn).toHaveText(/[\d,]+ cruises/i, { timeout: 10_000 });
     const countAfterFirst = parseInt((await btn.innerText()).replace(/[^\d]/g, ''), 10);
-    await sp.selectDestination('Caribbean');
+    await sp.selectSecondDestination();
     await expect(btn).toHaveText(/[\d,]+ cruises/i, { timeout: 10_000 });
     const countAfterSecond = parseInt((await btn.innerText()).replace(/[^\d]/g, ''), 10);
     expect(countAfterSecond).toBeGreaterThan(countAfterFirst);
@@ -118,13 +113,12 @@ test.describe('Search box — Cruise Line dropdown', () => {
     ).toBeVisible();
   });
 
-  test('shows popular cruise line options in the dropdown list', async ({ page }) => {
+  test('shows at least 5 cruise line options in the dropdown list', async ({ page }) => {
     await page.locator('[data-cruiseappy="search_cruise_line"]').click();
-    await expect(page.locator('label:has(input[name="cruiseline"][value="MSC Cruises"])')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('label:has(input[name="cruiseline"][value="Royal Caribbean"])')).toBeVisible();
-    await expect(page.locator('label:has(input[name="cruiseline"][value="Norwegian Cruise Line"])')).toBeVisible();
-    await expect(page.locator('label:has(input[name="cruiseline"][value="Princess Cruises"])')).toBeVisible();
-    await expect(page.locator('label:has(input[name="cruiseline"][value="Cunard"])')).toBeVisible();
+    const options = page.locator('label:has(input[name="cruiseline"]):not(.d-none)');
+    await options.first().waitFor({ state: 'visible', timeout: 10_000 });
+    const count = await options.count();
+    expect(count, 'Expected at least 5 cruise line options').toBeGreaterThanOrEqual(5);
   });
 
   test('contains a search text input inside the dropdown', async ({ page }) => {
@@ -136,25 +130,23 @@ test.describe('Search box — Cruise Line dropdown', () => {
 
   test('selecting a cruise line updates the trigger label', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectCruiseLine('MSC Cruises');
-    await expect(
-      page.locator('[data-cruiseappy="search_cruise_line"]'),
-    ).toContainText('MSC Cruises');
+    const selected = await sp.selectFirstCruiseLine();
+    await expect(page.locator('[data-cruiseappy="search_cruise_line"]')).toContainText(selected);
   });
 
   test('selecting a cruise line updates the search button count', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectCruiseLine('Royal Caribbean');
+    await sp.selectFirstCruiseLine();
     await expect(page.locator('[data-cruiseappy="search"]')).toHaveText(/[\d,]+ cruises/i);
   });
 
   test('combining destination + cruise line produces a narrower count', async ({ page }) => {
     const sp = new SearchPage(page);
     const btn = page.locator('[data-cruiseappy="search"]');
-    await sp.selectDestination('Mediterranean');
+    await sp.selectFirstDestination();
     await expect(btn).toHaveText(/[\d,]+ cruises/i, { timeout: 10_000 });
     const afterDest = parseInt((await btn.innerText()).replace(/[^\d]/g, ''), 10);
-    await sp.selectCruiseLine('MSC Cruises');
+    await sp.selectFirstCruiseLine();
     await expect(btn).toHaveText(/[\d,]+ cruises/i, { timeout: 10_000 });
     const afterBoth = parseInt((await btn.innerText()).replace(/[^\d]/g, ''), 10);
     expect(afterBoth).toBeLessThanOrEqual(afterDest);
@@ -252,10 +244,12 @@ test.describe('Search box — Departure Port dropdown', () => {
     ).toBeVisible();
   });
 
-  test('shows a list of departure port options', async ({ page }) => {
+  test('shows at least 2 departure port options in the dropdown', async ({ page }) => {
     await page.locator('[data-cruiseappy="search_port"]').click();
-    await expect(page.locator('label:has(input[name="departport"][value="Barcelona"])')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('label:has(input[name="departport"][value="Southampton"])')).toBeVisible();
+    const options = page.locator('label:has(input[name="departport"])');
+    await options.first().waitFor({ state: 'visible', timeout: 10_000 });
+    const count = await options.count();
+    expect(count, 'Expected at least 2 departure port options').toBeGreaterThanOrEqual(2);
   });
 
   test('contains a search text input inside the dropdown', async ({ page }) => {
@@ -267,15 +261,13 @@ test.describe('Search box — Departure Port dropdown', () => {
 
   test('selecting a port updates the trigger label', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectPort('Southampton');
-    await expect(
-      page.locator('[data-cruiseappy="search_port"]'),
-    ).toContainText('Southampton');
+    const selected = await sp.selectFirstPort();
+    await expect(page.locator('[data-cruiseappy="search_port"]')).toContainText(selected);
   });
 
   test('selecting a single port updates the search button count', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectPort('Barcelona');
+    await sp.selectFirstPort();
     await expect(page.locator('[data-cruiseappy="search"]')).toHaveText(/[\d,]+ cruises/i);
   });
 });
@@ -305,7 +297,7 @@ test.describe('Search box — Search button', () => {
     // Default state: "Search" (no count)
     const defaultText = (await btn.innerText()).trim();
     expect(defaultText).toMatch(/^search$/i);
-    await sp.selectDestination('Mediterranean');
+    await sp.selectFirstDestination();
     // Should now show a count
     await expect(btn).toHaveText(/[\d,]+ cruises/i, { timeout: 10_000 });
   });
@@ -313,10 +305,10 @@ test.describe('Search box — Search button', () => {
   test('button text changes further when cruise line is also selected', async ({ page }) => {
     const sp = new SearchPage(page);
     const btn = page.locator('[data-cruiseappy="search"]');
-    await sp.selectDestination('Mediterranean');
+    await sp.selectFirstDestination();
     await expect(btn).toHaveText(/[\d,]+ cruises/i, { timeout: 10_000 });
     const countDestOnly = parseInt((await btn.innerText()).replace(/[^\d]/g, ''), 10);
-    await sp.selectCruiseLine('MSC Cruises');
+    await sp.selectFirstCruiseLine();
     await expect(btn).toHaveText(/[\d,]+ cruises/i, { timeout: 10_000 });
     const countBoth = parseInt((await btn.innerText()).replace(/[^\d]/g, ''), 10);
     expect(countBoth).toBeLessThan(countDestOnly);
@@ -324,17 +316,17 @@ test.describe('Search box — Search button', () => {
 
   test('clicking the search button navigates to the results page with correct URL params', async ({ page }) => {
     const sp = new SearchPage(page);
-    await sp.selectDestination('Mediterranean');
+    await sp.selectFirstDestination();
     await page.locator('[data-cruiseappy="search"]').click();
     await page.waitForLoadState('domcontentloaded');
     expect(page.url()).toContain('/search/');
-    expect(page.url()).toContain('region=Mediterranean');
+    expect(page.url()).toMatch(/[?&]region=/);
   });
 
   test('results page loads with a cruise count after clicking Search', async ({ page }) => {
     test.setTimeout(90_000);
     const sp = new SearchPage(page);
-    await sp.selectDestination('Mediterranean');
+    await sp.selectFirstDestination();
     await page.locator('[data-cruiseappy="search"]').click();
     await page.waitForLoadState('domcontentloaded');
     // Wait for the count heading and assert it contains a number
