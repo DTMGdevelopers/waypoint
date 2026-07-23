@@ -9,7 +9,7 @@ const themes: Record<string, ThemeConfig> = {
   automation,
   visioncruise,
   cll,
-  'century-cypress': centuryCyprus,
+  'century-cyprus': centuryCyprus,
   'hays-cruise': haysCruise,
 };
 
