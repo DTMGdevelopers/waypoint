@@ -3,12 +3,14 @@ import { visioncruise } from './visioncruise';
 import { cll } from './cll';
 import { centuryCyprus } from './century-cyprus';
 import { automation } from './automation';
+import { haysCruise } from './hays-cruise';
 
 const themes: Record<string, ThemeConfig> = {
   automation,
   visioncruise,
   cll,
-  'century-cyprus': centuryCyprus,
+  'century-cypress': centuryCyprus,
+  'hays-cruise': haysCruise,
 };
 
 /**

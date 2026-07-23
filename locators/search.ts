@@ -6,6 +6,20 @@ export const SearchLocators = {
   /** CTA whose href is read at runtime to discover the per-theme search URL */
   searchCta: '[data-cruiseappy="search"]',
 
+  // ── Search form fields ───────────────────────────────────────────────────
+  /** Destination / region dropdown trigger */
+  searchDestination: '[data-cruiseappy="search_destination"]',
+  /** Cruise line dropdown trigger */
+  searchCruiseLine:  '[data-cruiseappy="search_cruise_line"]',
+  /** Combined departure date range picker trigger */
+  searchDates:       '[data-cruiseappy="search_dates"]',
+  /** Duration dropdown trigger */
+  searchDuration:    '[data-cruiseappy="search_duration"]',
+  /** Departure port dropdown trigger */
+  searchPort:        '[data-cruiseappy="search_port"]',
+  /** The dropdown panel that opens beneath a search-form-item trigger */
+  searchDropdownPanel: '.search-form-dropdown',
+
   // ── Result cards ─────────────────────────────────────────────────────────
   /** "View details" link on each AJAX-rendered result card */
   viewCruise: '[data-cruiseappy="view_cruise"]',
@@ -32,4 +46,10 @@ export const SearchLocators = {
 export const SearchFallbacks = {
   /** JS-toggled loading overlay class used on legacy sites */
   searchResultsLoading: '#search-loading-overlay.is-visible',
+  // ── Search form field fallbacks (id-based — stable in the starter theme) ─
+  searchDestination: '#search-form-region',
+  searchCruiseLine:  '#search-form-cruiseline',
+  searchDates:       '#search-form-departs',
+  searchDuration:    '#search-form-duration',
+  searchPort:        '#search-form-departport',
 } as const;
