@@ -185,31 +185,19 @@ test.describe('Homepage', () => {
       await page.reload({ waitUntil: 'domcontentloaded' });
     });
 
-    await test.step('confirm no blocking requests failed', async () => {
-      const critical = failures.filter(
-        (url) =>
-          !url.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|woff2?|ttf|eot|mp4|webm|ogv)(\?.*)?$/i) &&
-          !url.includes('analytics') &&
-          !url.includes('tracking') &&
-          !url.includes('hotjar') &&
-          !url.includes('gstatic.com') &&
-          !url.includes('googletagmanager') &&
-          !url.includes('doubleclick') &&
-          !url.includes('cdn-cgi') &&
-          !url.includes('pingdom.net') &&
-          !url.includes('contentsquare.net') &&
-          !url.includes('clarity.ms') &&
-          !url.includes('data-crypt.com') &&
-          !url.includes('feefo.com') &&
-          !url.includes('google.com/rmkt') &&
-          !url.includes('google.com/pagead') &&
-          !url.includes('google.co.uk/ads') &&
-          !url.startsWith('GET blob:') &&
-          !(url.startsWith('POST ') && url.includes('/api/')),
-      );
+    await test.step('confirm no first-party requests failed', async () => {
+      const siteHostname = new URL(page.url()).hostname;
+      const critical = failures.filter((entry) => {
+        try {
+          const rawUrl = entry.replace(/^[A-Z]+ /, '');
+          return new URL(rawUrl).hostname === siteHostname;
+        } catch {
+          return false;
+        }
+      });
       expect(
         critical,
-        `These requests failed and may break the page: ${critical.join(', ')}`,
+        `These first-party requests failed and may break the page: ${critical.join(', ')}`,
       ).toHaveLength(0);
     });
   });
