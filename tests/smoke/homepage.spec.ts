@@ -198,6 +198,7 @@ test.describe('Homepage', () => {
           !url.includes('cdn-cgi') &&
           !url.includes('pingdom.net') &&
           !url.includes('contentsquare.net') &&
+          !url.includes('clarity.ms') &&
           !url.includes('data-crypt.com') &&
           !url.includes('feefo.com') &&
           !url.includes('google.com/rmkt') &&
